@@ -5,12 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.fredporciuncula.flow.preferences.FlowSharedPreferences
-import com.swordfish.lemuroid.R
 import com.swordfish.lemuroid.app.shared.library.PendingOperationsMonitor
 import com.swordfish.lemuroid.app.shared.settings.SettingsInteractor
+import com.swordfish.lemuroid.app.shared.update.UpdateManager
+import com.swordfish.lemuroid.app.shared.update.UpdateState
 import com.swordfish.lemuroid.lib.savesync.SaveSyncManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -42,6 +44,14 @@ class SettingsViewModel(
         val isSaveSyncSupported: Boolean = false,
     )
 
+    private val updateManager = UpdateManager.get(context)
+
+    val isUpdateSupported: Boolean = updateManager.isSupported
+
+    val currentVersion: String = updateManager.currentVersion
+
+    val updateState: StateFlow<UpdateState> = updateManager.state
+
     val indexingInProgress = PendingOperationsMonitor(context).anyLibraryOperationInProgress()
 
     val directoryScanInProgress = PendingOperationsMonitor(context).isDirectoryScanInProgress()
@@ -55,5 +65,13 @@ class SettingsViewModel(
 
     fun changeLocalStorageFolder() {
         settingsInteractor.changeLocalStorageFolder()
+    }
+
+    fun checkForUpdates() {
+        updateManager.checkForUpdates(silent = false)
+    }
+
+    fun showUpdate() {
+        updateManager.showDialog()
     }
 }

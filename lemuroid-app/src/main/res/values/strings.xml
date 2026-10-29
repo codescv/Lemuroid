@@ -266,4 +266,34 @@
     <string name="game_toast_state_import_wrong_core">This state was created with a different core (%1$s)</string>
     <string name="game_toast_save_transfer_failed">Operation failed: %1$s</string>
 
+    <string name="update_check_title">Check for updates</string>
+    <string name="update_status_idle">Current version %1$s</string>
+    <string name="update_status_checking">Checking…</string>
+    <string name="update_status_up_to_date">Up to date (%1$s)</string>
+    <string name="update_status_available">New version %1$s available</string>
+    <string name="update_status_downloading">Downloading %1$s…</string>
+    <string name="update_status_downloaded">Version %1$s ready to install</string>
+    <string name="update_status_error">Check failed: %1$s</string>
+    <string name="update_available_title">Update available: %1$s</string>
+    <string name="update_current_latest">Current %1$s → Latest %2$s</string>
+    <string name="update_progress">%1$s / %2$s</string>
+    <string name="update_ready_to_install">Download complete. Tap Install to continue.</string>
+    <string name="update_action_update">Update</string>
+    <string name="update_action_install">Install</string>
+    <string name="update_action_later">Later</string>
+    <string name="update_action_cancel">Cancel</string>
+    <string name="update_allow_unknown_sources">Allow \"Install unknown apps\" and return; installation will continue automatically</string>
+    <string name="update_error_network">Network error</string>
+    <string name="update_error_timeout">Connection timed out</string>
+    <string name="update_error_http">Server error</string>
+    <string name="update_error_rate_limited">GitHub API rate limit reached, please try again later</string>
+    <string name="update_error_not_found">No release found</string>
+    <string name="update_error_invalid_response">Invalid release information</string>
+    <string name="update_error_corrupt">Downloaded APK is corrupt or incomplete</string>
+    <string name="update_error_wrong_package">APK package name does not match</string>
+    <string name="update_error_not_newer">APK version is not newer than the installed version</string>
+    <string name="update_error_signature_mismatch">Signed with a different key — uninstall Lemuroid and install the downloaded APK manually</string>
+    <string name="update_error_no_apk">This release has no APK asset</string>
+    <string name="update_error_installer">Cannot start package installer</string>
+
 </resources>

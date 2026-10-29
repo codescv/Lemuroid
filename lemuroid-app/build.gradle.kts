@@ -10,8 +10,8 @@ plugins {
 
 android {
     defaultConfig {
-        versionCode = 253
-        versionName = "1.17.1" // Always remember to update Cores Tag!
+        versionCode = 254
+        versionName = "1.17.2" // Always remember to update Cores Tag!
         applicationId = "com.swordfish.lemuroid"
     }
     flavorDimensions += listOf("opensource", "cores")
@@ -213,6 +213,8 @@ dependencies {
 
     kapt(deps.libs.dagger.android.processor)
     kapt(deps.libs.dagger.compiler)
+
+    testImplementation("junit:junit:4.13.2")
 }
 
 fun usePlayDynamicFeatures(): Boolean {
