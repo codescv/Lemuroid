@@ -1,5 +1,6 @@
 package com.swordfish.lemuroid.lib.saves
 
+import android.util.AtomicFile
 import com.swordfish.lemuroid.common.kotlin.readBytesUncompressedAtomic
 import com.swordfish.lemuroid.common.kotlin.readTextAtomic
 import com.swordfish.lemuroid.common.kotlin.runCatchingWithRetry
@@ -58,6 +59,22 @@ class StatesManager(private val directoriesManager: DirectoriesManager) {
     ) = withContext(Dispatchers.IO) {
         setSaveState(getAutoSaveFileName(game), coreID.coreName, saveState)
     }
+
+    suspend fun deleteAutoSave(
+        game: Game,
+        coreID: CoreID,
+    ): Unit =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val fileName = getAutoSaveFileName(game)
+                val stateFile = getStateFile(fileName, coreID.coreName)
+                val metadataFile = getMetadataStateFile(fileName, coreID.coreName)
+                runCatching { AtomicFile(stateFile).delete() }
+                runCatching { AtomicFile(metadataFile).delete() }
+                stateFile.delete()
+                metadataFile.delete()
+            }
+        }
 
     suspend fun getSavedSlotsInfo(
         game: Game,

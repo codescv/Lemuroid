@@ -44,6 +44,7 @@ import androidx.navigation.compose.rememberNavController
 import com.swordfish.lemuroid.R
 import com.swordfish.lemuroid.app.mobile.feature.gamemenu.coreoptions.GameMenuCoreOptionsScreen
 import com.swordfish.lemuroid.app.mobile.feature.gamemenu.coreoptions.GameMenuCoreOptionsViewModel
+import com.swordfish.lemuroid.app.mobile.feature.gamemenu.savetransfer.GameMenuSaveTransferScreen
 import com.swordfish.lemuroid.app.mobile.feature.gamemenu.states.GameMenuStatesScreen
 import com.swordfish.lemuroid.app.mobile.feature.gamemenu.states.GameMenuStatesViewModel
 import com.swordfish.lemuroid.app.mobile.shared.compose.ui.AppTheme
@@ -224,6 +225,43 @@ class GameMenuActivity : RetrogradeComponentActivity() {
                                 factory = GameMenuCoreOptionsViewModel.Factory(inputDeviceManager),
                             ),
                             gameMenuRequest,
+                        )
+                    }
+                    composable(GameMenuRoute.SAVE_TRANSFER) {
+                        GameMenuSaveTransferScreen(navController, gameMenuRequest, ::onResult)
+                    }
+                    composable(GameMenuRoute.EXPORT_STATE) {
+                        GameMenuStatesScreen(
+                            viewModel(
+                                factory =
+                                    GameMenuStatesViewModel.Factory(
+                                        application,
+                                        gameMenuRequest,
+                                        statesManager,
+                                        true,
+                                        statesPreviewManager,
+                                    ),
+                            ),
+                            onStateClicked = {
+                                onResult { putExtra(GameMenuContract.RESULT_EXPORT_STATE, it) }
+                            },
+                        )
+                    }
+                    composable(GameMenuRoute.IMPORT_STATE) {
+                        GameMenuStatesScreen(
+                            viewModel(
+                                factory =
+                                    GameMenuStatesViewModel.Factory(
+                                        application,
+                                        gameMenuRequest,
+                                        statesManager,
+                                        false,
+                                        statesPreviewManager,
+                                    ),
+                            ),
+                            onStateClicked = {
+                                onResult { putExtra(GameMenuContract.RESULT_IMPORT_STATE, it) }
+                            },
                         )
                     }
                 }
