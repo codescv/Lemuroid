@@ -16,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -57,15 +58,17 @@ import com.swordfish.lemuroid.app.shared.input.InputDeviceManager
 import com.swordfish.lemuroid.app.shared.main.BusyActivity
 import com.swordfish.lemuroid.app.shared.main.GameLaunchTaskHandler
 import com.swordfish.lemuroid.app.shared.settings.SettingsInteractor
+import com.swordfish.lemuroid.app.shared.update.UpdateDialog
+import com.swordfish.lemuroid.app.shared.update.UpdateManager
 import com.swordfish.lemuroid.common.coroutines.safeLaunch
 import com.swordfish.lemuroid.ext.feature.review.ReviewManager
 import com.swordfish.lemuroid.lib.android.RetrogradeComponentActivity
 import com.swordfish.lemuroid.lib.bios.BiosManager
 import com.swordfish.lemuroid.lib.core.CoresSelection
 import com.swordfish.lemuroid.lib.injection.PerActivity
-import com.swordfish.lemuroid.lib.library.covers.CustomCoverManager
 import com.swordfish.lemuroid.lib.library.MetaSystemID
 import com.swordfish.lemuroid.lib.library.SystemID
+import com.swordfish.lemuroid.lib.library.covers.CustomCoverManager
 import com.swordfish.lemuroid.lib.library.db.RetrogradeDatabase
 import com.swordfish.lemuroid.lib.library.db.entity.Game
 import com.swordfish.lemuroid.lib.preferences.SharedPreferencesHelper
@@ -105,6 +108,8 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
 
     private val reviewManager = ReviewManager()
 
+    private val updateManager by lazy { UpdateManager.get(applicationContext) }
+
     private val mainViewModel: MainViewModel by viewModels {
         MainViewModel.Factory(applicationContext, saveSyncManager)
     }
@@ -116,6 +121,8 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
         )
         super.onCreate(savedInstanceState)
 
+        updateManager.checkForUpdates(silent = true)
+
         GlobalScope.safeLaunch {
             reviewManager.initialize(applicationContext)
         }
@@ -124,6 +131,11 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
             val navController = rememberNavController()
             MainScreen(navController)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateManager.onHostResume(this)
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -377,6 +389,14 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
                     text = { HtmlText(text = message) },
                     onDismissRequest = { infoDialogDisplayed.value = false },
                     confirmButton = { },
+                )
+            }
+
+            val updateDialogVisible by updateManager.dialogVisible.collectAsState()
+            if (updateDialogVisible) {
+                UpdateDialog(
+                    manager = updateManager,
+                    onDismiss = { updateManager.dismissDialog() },
                 )
             }
         }

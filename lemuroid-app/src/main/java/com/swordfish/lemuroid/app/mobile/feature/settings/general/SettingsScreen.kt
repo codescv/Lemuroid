@@ -14,6 +14,8 @@ import com.swordfish.lemuroid.R
 import com.swordfish.lemuroid.app.mobile.feature.main.MainRoute
 import com.swordfish.lemuroid.app.mobile.feature.main.navigateToRoute
 import com.swordfish.lemuroid.app.shared.library.LibraryIndexScheduler
+import com.swordfish.lemuroid.app.shared.update.UpdateManager
+import com.swordfish.lemuroid.app.shared.update.UpdateState
 import com.swordfish.lemuroid.app.utils.android.settings.LemuroidCardSettingsGroup
 import com.swordfish.lemuroid.app.utils.android.settings.LemuroidSettingsList
 import com.swordfish.lemuroid.app.utils.android.settings.LemuroidSettingsMenuLink
@@ -58,6 +60,7 @@ fun SettingsScreen(
         MiscSettings(
             indexingInProgress = indexingInProgress,
             isSaveSyncSupported = state.isSaveSyncSupported,
+            viewModel = viewModel,
             navController = navController,
         )
     }
@@ -67,6 +70,7 @@ fun SettingsScreen(
 private fun MiscSettings(
     indexingInProgress: Boolean,
     isSaveSyncSupported: Boolean,
+    viewModel: SettingsViewModel,
     navController: NavController,
 ) {
     LemuroidCardSettingsGroup(
@@ -103,6 +107,47 @@ private fun MiscSettings(
             },
             onClick = { navController.navigateToRoute(MainRoute.SETTINGS_ADVANCED) },
         )
+        if (viewModel.isUpdateSupported) {
+            val updateState = viewModel.updateState.collectAsState().value
+            val subtitleText =
+                when (updateState) {
+                    UpdateState.Idle ->
+                        stringResource(id = R.string.update_status_idle, viewModel.currentVersion)
+                    UpdateState.Checking ->
+                        stringResource(id = R.string.update_status_checking)
+                    is UpdateState.UpToDate ->
+                        stringResource(id = R.string.update_status_up_to_date, updateState.latest.version)
+                    is UpdateState.Available ->
+                        stringResource(id = R.string.update_status_available, updateState.latest.version)
+                    is UpdateState.Downloading ->
+                        stringResource(id = R.string.update_status_downloading, updateState.latest.version)
+                    is UpdateState.Downloaded ->
+                        stringResource(id = R.string.update_status_downloaded, updateState.latest.version)
+                    is UpdateState.Error ->
+                        stringResource(
+                            id = R.string.update_status_error,
+                            stringResource(id = UpdateManager.errorStringRes(updateState.code)),
+                        )
+                }
+            LemuroidSettingsMenuLink(
+                title = { Text(text = stringResource(id = R.string.update_check_title)) },
+                subtitle = { Text(text = subtitleText) },
+                enabled = updateState !is UpdateState.Checking,
+                onClick = {
+                    when (updateState) {
+                        is UpdateState.Available,
+                        is UpdateState.Downloading,
+                        is UpdateState.Downloaded,
+                        -> viewModel.showUpdate()
+                        UpdateState.Idle,
+                        UpdateState.Checking,
+                        is UpdateState.UpToDate,
+                        is UpdateState.Error,
+                        -> viewModel.checkForUpdates()
+                    }
+                },
+            )
+        }
     }
 }
 
