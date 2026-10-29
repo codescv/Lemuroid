@@ -10,8 +10,8 @@ plugins {
 
 android {
     defaultConfig {
-        versionCode = 252
-        versionName = "1.17.0" // Always remember to update Cores Tag!
+        versionCode = 253
+        versionName = "1.17.1" // Always remember to update Cores Tag!
         applicationId = "com.swordfish.lemuroid"
     }
     flavorDimensions += listOf("opensource", "cores")
@@ -84,17 +84,22 @@ android {
         }
 
         maybeCreate("release").apply {
-            storeFile = file("$rootDir/release.jks")
-            keyAlias = "lemuroid"
-            storePassword = "lemuroid"
-            keyPassword = "lemuroid"
+            storeFile = System.getenv("KEYSTORE_FILE")?.let { file(it) } ?: file("$rootDir/release.jks")
+            keyAlias = System.getenv("KEY_ALIAS") ?: "lemuroid"
+            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "lemuroid"
+            keyPassword = System.getenv("KEY_PASSWORD") ?: "lemuroid"
         }
     }
 
     buildTypes {
         getByName("release") {
             isMinifyEnabled = true
-            signingConfig = signingConfigs["release"]
+            signingConfig =
+                if (signingConfigs["release"].storeFile?.exists() == true) {
+                    signingConfigs["release"]
+                } else {
+                    signingConfigs.getByName("debug")
+                }
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
             resValue("string", "lemuroid_name", "Lemuroid")
         }

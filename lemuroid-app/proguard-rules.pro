@@ -75,13 +75,15 @@
 ## Kotlin serialization
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.SerializationKt
--keep,includedescriptorclasses class com.swordfish.lemuroid.**$$serializer { *; }
--keepclassmembers class com.swordfish.lemuroid.** {
+-keep,includedescriptorclasses class com.swordfish.**$$serializer { *; }
+-keepclassmembers class com.swordfish.** {
     *** Companion;
 }
--keepclasseswithmembers class com.swordfish.lemuroid.** {
+-keepclasseswithmembers class com.swordfish.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
+-keep,includedescriptorclasses class com.swordfish.lemuroid.lib.saves.SaveStateBundle$Manifest { *; }
+-keep,includedescriptorclasses class com.swordfish.lemuroid.lib.saves.SaveState$Metadata { *; }
 
 ## LibretroDroid
 -keep class com.swordfish.libretrodroid.** { *; }
