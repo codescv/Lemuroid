@@ -1,22 +1,17 @@
 package com.swordfish.lemuroid.app.shared.game
 
 import android.app.Activity
-import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.SharedPreferences
-import android.net.Uri
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.MotionEvent
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.withResumed
-import com.swordfish.lemuroid.R
 import com.swordfish.lemuroid.app.mobile.feature.game.GameActivity
 import com.swordfish.lemuroid.app.mobile.feature.game.GameService
 import com.swordfish.lemuroid.app.mobile.feature.settings.SettingsManager
@@ -93,54 +88,6 @@ abstract class BaseGameActivity : ImmersiveActivity() {
 
     private val startGameTime = System.currentTimeMillis()
     private var finishTriggered = false
-    private var pendingStateSlot: Int? = null
-
-    private val exportSramLauncher =
-        registerForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri: Uri? ->
-            if (uri != null) {
-                runWhenResumed {
-                    baseGameScreenViewModel.exportSaveRam(uri)
-                }
-            }
-        }
-
-    private val importSramLauncher =
-        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
-            if (uri != null) {
-                runWhenResumed {
-                    baseGameScreenViewModel.importSaveRam(uri)
-                }
-            }
-        }
-
-    private val exportStateLauncher =
-        registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri: Uri? ->
-            val slot = pendingStateSlot
-            pendingStateSlot = null
-            if (uri != null && slot != null) {
-                runWhenResumed {
-                    baseGameScreenViewModel.exportState(slot, uri)
-                }
-            }
-        }
-
-    private val importStateLauncher =
-        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
-            val slot = pendingStateSlot
-            pendingStateSlot = null
-            if (uri != null && slot != null) {
-                runWhenResumed {
-                    baseGameScreenViewModel.importState(slot, uri)
-                }
-            }
-        }
-
-    private fun runWhenResumed(block: suspend () -> Unit) {
-        lifecycleScope.launch {
-            lifecycle.withResumed {}
-            block()
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -418,7 +365,6 @@ abstract class BaseGameActivity : ImmersiveActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == DIALOG_REQUEST) {
             Timber.i("Game menu dialog response: ${data?.extras.dump()}")
-            handleSaveTransferResult(data)
             if (data?.getBooleanExtra(GameMenuContract.RESULT_RESET, false) == true) {
                 GlobalScope.launch {
                     baseGameScreenViewModel.reset()
@@ -468,47 +414,6 @@ abstract class BaseGameActivity : ImmersiveActivity() {
                 baseGameScreenViewModel.changeTiltConfiguration(tiltConfig!!)
             }
         }
-    }
-
-    private fun handleSaveTransferResult(data: Intent?) {
-        if (data == null) return
-        try {
-            when {
-                data.getBooleanExtra(GameMenuContract.RESULT_EXPORT_SRAM, false) -> {
-                    exportSramLauncher.launch(defaultSramFileName())
-                }
-                data.getBooleanExtra(GameMenuContract.RESULT_IMPORT_SRAM, false) -> {
-                    importSramLauncher.launch(arrayOf("*/*"))
-                }
-                data.hasExtra(GameMenuContract.RESULT_EXPORT_STATE) -> {
-                    val slot = data.getIntExtra(GameMenuContract.RESULT_EXPORT_STATE, 0)
-                    pendingStateSlot = slot
-                    exportStateLauncher.launch(defaultStateFileName(slot))
-                }
-                data.hasExtra(GameMenuContract.RESULT_IMPORT_STATE) -> {
-                    val slot = data.getIntExtra(GameMenuContract.RESULT_IMPORT_STATE, 0)
-                    pendingStateSlot = slot
-                    importStateLauncher.launch(arrayOf("*/*"))
-                }
-            }
-        } catch (e: ActivityNotFoundException) {
-            Timber.e(e, "SAF file picker not available")
-            displayToast(
-                getString(
-                    R.string.game_toast_save_transfer_failed,
-                    e.localizedMessage ?: e.javaClass.simpleName,
-                ),
-            )
-        }
-    }
-
-    private fun defaultSramFileName(): String {
-        val baseName = game.fileName.substringBeforeLast(".")
-        return "${baseName.ifBlank { game.fileName }}.srm"
-    }
-
-    private fun defaultStateFileName(slot: Int): String {
-        return "${game.fileName}.slot${slot + 1}.lemuroid-state.zip"
     }
 
     companion object {

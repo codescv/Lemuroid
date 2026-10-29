@@ -72,6 +72,9 @@ import com.swordfish.lemuroid.lib.library.covers.CustomCoverManager
 import com.swordfish.lemuroid.lib.library.db.RetrogradeDatabase
 import com.swordfish.lemuroid.lib.library.db.entity.Game
 import com.swordfish.lemuroid.lib.preferences.SharedPreferencesHelper
+import com.swordfish.lemuroid.lib.saves.SavesManager
+import com.swordfish.lemuroid.lib.saves.StatesManager
+import com.swordfish.lemuroid.lib.saves.StatesPreviewManager
 import com.swordfish.lemuroid.lib.savesync.SaveSyncManager
 import com.swordfish.lemuroid.lib.storage.DirectoriesManager
 import dagger.Provides
@@ -372,6 +375,9 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
                 onClearCustomName = { game -> gameInteractor.onClearCustomName(game) },
                 onSetCustomCoverUri = { game, uri -> gameInteractor.onSetCustomCoverUri(game, uri) },
                 onClearCustomCoverUri = { game -> gameInteractor.onClearCustomCoverUri(game) },
+                onLoadSaveTransferInfo = { game -> gameInteractor.getSaveTransferInfo(game) },
+                onSaveTransferAllowed = { gameInteractor.canStartSaveTransfer() },
+                onSaveTransfer = { req, uri -> gameInteractor.onSaveTransfer(req, uri) },
             )
 
             if (infoDialogDisplayed.value) {
@@ -448,7 +454,22 @@ class MainActivity : RetrogradeComponentActivity(), BusyActivity {
                 shortcutsGenerator: ShortcutsGenerator,
                 gameLauncher: GameLauncher,
                 customCoverManager: CustomCoverManager,
-            ) = GameInteractor(activity, retrogradeDb, false, shortcutsGenerator, gameLauncher, customCoverManager)
+                savesManager: SavesManager,
+                statesManager: StatesManager,
+                statesPreviewManager: StatesPreviewManager,
+                coresSelection: CoresSelection,
+            ) = GameInteractor(
+                activity,
+                retrogradeDb,
+                false,
+                shortcutsGenerator,
+                gameLauncher,
+                customCoverManager,
+                savesManager,
+                statesManager,
+                statesPreviewManager,
+                coresSelection,
+            )
         }
     }
 }

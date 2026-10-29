@@ -1,6 +1,8 @@
 package com.swordfish.lemuroid.app.mobile.feature.main
 
+import android.content.ActivityNotFoundException
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -30,19 +32,17 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RestartAlt
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,6 +50,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +61,9 @@ import androidx.compose.ui.unit.dp
 import com.swordfish.lemuroid.R
 import com.swordfish.lemuroid.app.mobile.shared.compose.ui.LemuroidGameTexts
 import com.swordfish.lemuroid.app.mobile.shared.compose.ui.LemuroidSmallGameImage
+import com.swordfish.lemuroid.app.shared.savetransfer.SaveTransferInfo
+import com.swordfish.lemuroid.app.shared.savetransfer.SaveTransferKind
+import com.swordfish.lemuroid.app.shared.savetransfer.SaveTransferRequest
 import com.swordfish.lemuroid.lib.library.db.entity.Game
 import timber.log.Timber
 
@@ -76,7 +80,67 @@ fun MainGameContextActions(
     onClearCustomName: (Game) -> Unit,
     onSetCustomCoverUri: (Game, String) -> Unit,
     onClearCustomCoverUri: (Game) -> Unit,
+    onLoadSaveTransferInfo: suspend (Game) -> SaveTransferInfo,
+    onSaveTransferAllowed: () -> Boolean,
+    onSaveTransfer: (SaveTransferRequest, Uri) -> Unit,
 ) {
+    val context = LocalContext.current
+    val pendingTransfer = rememberSaveable { mutableStateOf<SaveTransferRequest?>(null) }
+
+    val handlePickedUri: (Uri?) -> Unit = { uri ->
+        val req = pendingTransfer.value
+        pendingTransfer.value = null
+        if (uri != null && req != null) {
+            onSaveTransfer(req, uri)
+        }
+    }
+
+    val createSramLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.CreateDocument("application/octet-stream"),
+            onResult = handlePickedUri,
+        )
+
+    val createStateLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.CreateDocument("application/zip"),
+            onResult = handlePickedUri,
+        )
+
+    val openDocumentLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument(),
+            onResult = handlePickedUri,
+        )
+
+    val startSaveTransfer: (SaveTransferRequest) -> Unit = { req ->
+        if (onSaveTransferAllowed()) {
+            pendingTransfer.value = req
+            selectedGameState.value = null
+            try {
+                when (req.kind) {
+                    SaveTransferKind.EXPORT_SRAM -> createSramLauncher.launch(req.defaultFileName())
+                    SaveTransferKind.EXPORT_STATE -> createStateLauncher.launch(req.defaultFileName())
+                    SaveTransferKind.IMPORT_SRAM,
+                    SaveTransferKind.IMPORT_STATE,
+                    -> openDocumentLauncher.launch(arrayOf("*/*"))
+                }
+            } catch (e: ActivityNotFoundException) {
+                Timber.e(e, "No document picker available for save transfer")
+                pendingTransfer.value = null
+                val appContext = context.applicationContext
+                Toast.makeText(
+                    appContext,
+                    appContext.getString(
+                        R.string.save_transfer_failed,
+                        e.localizedMessage ?: "No file picker",
+                    ),
+                    Toast.LENGTH_LONG,
+                ).show()
+            }
+        }
+    }
+
     val modalSheetState = rememberModalBottomSheetState(true)
     val selectedGame = selectedGameState.value
 
@@ -105,6 +169,8 @@ fun MainGameContextActions(
                 onClearCustomName = onClearCustomName,
                 onSetCustomCoverUri = onSetCustomCoverUri,
                 onClearCustomCoverUri = onClearCustomCoverUri,
+                onLoadSaveTransferInfo = onLoadSaveTransferInfo,
+                onStartSaveTransfer = startSaveTransfer,
             )
         }
     }
@@ -123,26 +189,30 @@ private fun ContextActionContent(
     onClearCustomName: (Game) -> Unit,
     onSetCustomCoverUri: (Game, String) -> Unit,
     onClearCustomCoverUri: (Game) -> Unit,
+    onLoadSaveTransferInfo: suspend (Game) -> SaveTransferInfo,
+    onStartSaveTransfer: (SaveTransferRequest) -> Unit,
 ) {
     val context = LocalContext.current
     var showCustomNameDialog by remember { mutableStateOf(false) }
+    var showSaveTransferDialog by remember { mutableStateOf(false) }
 
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-    ) { uri: Uri? ->
-        if (uri != null) {
-            try {
-                context.contentResolver.takePersistableUriPermission(
-                    uri,
-                    android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                )
-            } catch (e: SecurityException) {
-                Timber.e(e, "Failed to persist read URI permission for custom cover")
+    val imagePickerLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent(),
+        ) { uri: Uri? ->
+            if (uri != null) {
+                try {
+                    context.contentResolver.takePersistableUriPermission(
+                        uri,
+                        android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                    )
+                } catch (e: SecurityException) {
+                    Timber.e(e, "Failed to persist read URI permission for custom cover")
+                }
+                onSetCustomCoverUri(selectedGame, uri.toString())
+                selectedGameState.value = null
             }
-            onSetCustomCoverUri(selectedGame, uri.toString())
-            selectedGameState.value = null
         }
-    }
 
     Column(
         modifier =
@@ -167,6 +237,13 @@ private fun ContextActionContent(
             onClick = {
                 onGameRestart(selectedGame)
                 selectedGameState.value = null
+            },
+        )
+        ContextActionEntry(
+            label = stringResource(id = R.string.game_context_menu_save_transfer),
+            icon = Icons.Default.ImportExport,
+            onClick = {
+                showSaveTransferDialog = true
             },
         )
 
@@ -248,6 +325,18 @@ private fun ContextActionContent(
                 showCustomNameDialog = false
                 onSetCustomName(selectedGame, newName)
                 selectedGameState.value = null
+            },
+        )
+    }
+
+    if (showSaveTransferDialog) {
+        SaveTransferDialog(
+            game = selectedGame,
+            loadInfo = onLoadSaveTransferInfo,
+            onDismiss = { showSaveTransferDialog = false },
+            onRequest = { req ->
+                showSaveTransferDialog = false
+                onStartSaveTransfer(req)
             },
         )
     }
