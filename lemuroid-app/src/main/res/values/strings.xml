@@ -133,8 +133,6 @@
     <string name="game_menu_fast_forward">Fast-Forward</string>
     <string name="game_menu_change_disk_disk">Disk %1$s</string>
     <string name="game_menu_tilt_sensor">Tilt Sensor</string>
-    <string name="game_menu_hide_touch_controls">Hide touch controls</string>
-    <string name="game_touch_controls_open_menu">Open game menu</string>
 
     <string name="game_loading_preparing_game">Preparing game…</string>
 

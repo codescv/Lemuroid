@@ -1,6 +1,5 @@
 package com.swordfish.lemuroid.app.mobile.feature.game
 
-import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
@@ -13,7 +12,6 @@ object GameScreenLayout {
     const val CONSTRAINTS_RIGHT_PAD = "rightPad"
     const val CONSTRAINTS_GAME_VIEW = "gameView"
     const val CONSTRAINTS_GAME_CONTAINER = "gameContainer"
-    const val CONSTRAINTS_FLOATING_MENU = "floatingMenu"
 
     fun buildConstraintSet(
         isLandscape: Boolean,
@@ -33,7 +31,6 @@ object GameScreenLayout {
             val rightPad = createRefFor(CONSTRAINTS_RIGHT_PAD)
             val gameContainer = createRefFor(CONSTRAINTS_GAME_CONTAINER)
             val bottomContainer = createRefFor(CONSTRAINTS_BOTTOM_CONTAINER)
-            val floatingMenu = createRefFor(CONSTRAINTS_FLOATING_MENU)
 
             val gamePadChain = createHorizontalChain(leftPad, rightPad, chainStyle = ChainStyle.SpreadInside)
 
@@ -76,13 +73,6 @@ object GameScreenLayout {
                 top.linkTo(gameView.top)
                 bottom.linkTo(gameView.bottom)
             }
-
-            constrain(floatingMenu) {
-                top.linkTo(leftPad.top)
-                bottom.linkTo(parent.bottom)
-                absoluteLeft.linkTo(parent.absoluteLeft)
-                absoluteRight.linkTo(parent.absoluteRight)
-            }
         }
     }
 
@@ -92,7 +82,6 @@ object GameScreenLayout {
             val leftPad = createRefFor(CONSTRAINTS_LEFT_PAD)
             val rightPad = createRefFor(CONSTRAINTS_RIGHT_PAD)
             val gameContainer = createRefFor(CONSTRAINTS_GAME_CONTAINER)
-            val floatingMenu = createRefFor(CONSTRAINTS_FLOATING_MENU)
 
             val gamePadChain = createHorizontalChain(leftPad, rightPad, chainStyle = ChainStyle.SpreadInside)
 
@@ -128,12 +117,6 @@ object GameScreenLayout {
                 top.linkTo(gameView.top)
                 bottom.linkTo(gameView.bottom)
             }
-
-            constrain(floatingMenu) {
-                bottom.linkTo(parent.bottom, 16.dp)
-                absoluteLeft.linkTo(parent.absoluteLeft)
-                absoluteRight.linkTo(parent.absoluteRight)
-            }
         }
     }
 
@@ -145,7 +128,6 @@ object GameScreenLayout {
             val gameContainer = createRefFor(CONSTRAINTS_GAME_CONTAINER)
             val leftContainer = createRefFor(CONSTRAINTS_LEFT_CONTAINER)
             val rightContainer = createRefFor(CONSTRAINTS_RIGHT_CONTAINER)
-            val floatingMenu = createRefFor(CONSTRAINTS_FLOATING_MENU)
 
             constrain(leftPad) {
                 absoluteLeft.linkTo(parent.absoluteLeft)
@@ -194,12 +176,6 @@ object GameScreenLayout {
                 bottom.linkTo(parent.bottom)
                 width = Dimension.fillToConstraints
                 height = Dimension.fillToConstraints
-            }
-
-            constrain(floatingMenu) {
-                bottom.linkTo(parent.bottom, 16.dp)
-                absoluteLeft.linkTo(parent.absoluteLeft)
-                absoluteRight.linkTo(parent.absoluteRight)
             }
         }
     }

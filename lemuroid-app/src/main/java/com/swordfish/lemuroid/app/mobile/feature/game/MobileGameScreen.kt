@@ -1,8 +1,6 @@
 package com.swordfish.lemuroid.app.mobile.feature.game
 
 import android.graphics.RectF
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -15,11 +13,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Height
 import androidx.compose.material.icons.filled.OpenInFull
@@ -27,7 +23,6 @@ import androidx.compose.material.icons.filled.RotateLeft
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -43,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.layout
@@ -51,7 +45,6 @@ import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -72,7 +65,6 @@ import com.swordfish.touchinput.radial.ui.LemuroidButtonPressFeedback
 import gg.padkit.PadKit
 import gg.padkit.config.HapticFeedbackType
 import gg.padkit.inputstate.InputState
-import com.swordfish.lemuroid.R as AppR
 
 @Composable
 fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
@@ -174,17 +166,15 @@ fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
                             .onGloballyPositioned { viewportPosition.value = it.boundsInRoot() },
                 )
 
-                val hiddenByUser = viewModel.isTouchControllerHiddenByUser().collectAsState(false).value
-                val gamepadConnected = !touchControlsVisibleState.value
+                if (touchControllerSettings != null && currentControllerConfig != null) {
+                    val touchControlsVisible = touchControlsVisibleState.value
+                    val padsMeasureOnly = !touchControlsVisible && !isLandscape
+                    val padsComposed = touchControlsVisible || !isLandscape
 
-                if (touchControllerSettings != null && currentControllerConfig != null && !gamepadConnected) {
-                    val padsVisible = !hiddenByUser
-                    val padsMeasureOnly = hiddenByUser && !isLandscape
-
-                    if (padsVisible || padsMeasureOnly) {
+                    if (padsComposed) {
                         key(padsMeasureOnly) {
                             CompositionLocalProvider(LocalLemuroidPadTheme provides LemuroidPadTheme()) {
-                                if (padsVisible) {
+                                if (touchControlsVisible) {
                                     if (!isLandscape) {
                                         PadContainer(
                                             modifier = Modifier.layoutId(GameScreenLayout.CONSTRAINTS_BOTTOM_CONTAINER),
@@ -214,7 +204,7 @@ fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
                                     touchControllerSettings,
                                 )
 
-                                if (padsVisible) {
+                                if (touchControlsVisible) {
                                     GameScreenRunningCentralMenu(
                                         modifier = Modifier.layoutId(GameScreenLayout.CONSTRAINTS_GAME_CONTAINER),
                                         controllerConfig = currentControllerConfig,
@@ -224,13 +214,6 @@ fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
                                 }
                             }
                         }
-                    }
-
-                    if (hiddenByUser) {
-                        GameScreenFloatingMenuButton(
-                            modifier = Modifier.layoutId(GameScreenLayout.CONSTRAINTS_FLOATING_MENU),
-                            onClick = { viewModel.showGameMenu() },
-                        )
                     }
                 }
             }
@@ -391,27 +374,6 @@ private fun MenuEditTouchControlRow(
             contentDescription = label,
         )
         slider()
-    }
-}
-
-@Composable
-private fun GameScreenFloatingMenuButton(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
-    IconButton(
-        onClick = onClick,
-        modifier =
-            modifier
-                .size(48.dp)
-                .background(Color(0xFF303030).copy(alpha = 0.65f), CircleShape)
-                .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape),
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.button_menu),
-            contentDescription = stringResource(AppR.string.game_touch_controls_open_menu),
-            tint = Color.White.copy(alpha = 0.85f),
-        )
     }
 }
 

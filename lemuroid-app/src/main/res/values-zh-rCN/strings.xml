@@ -104,8 +104,6 @@
     <string name="game_menu_fast_forward">快进</string>
     <string name="game_menu_change_disk_disk">碟片 %1$s</string>
     <string name="game_menu_tilt_sensor">倾斜传感器</string>
-    <string name="game_menu_hide_touch_controls">隐藏虚拟按键</string>
-    <string name="game_touch_controls_open_menu">打开游戏菜单</string>
     <string name="game_loading_preparing_game">正在准备游戏…</string>
     <string name="game_toast_settings_button_using_gamepad">检测到游戏手柄。使用 %1$s 访问设置菜单。</string>
     <string name="game_toast_load_state_failed">无法加载此状态</string>

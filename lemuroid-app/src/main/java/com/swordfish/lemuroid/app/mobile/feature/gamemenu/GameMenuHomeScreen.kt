@@ -7,7 +7,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.Sensors
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -151,20 +150,6 @@ fun GameMenuHomeScreen(
             },
             onClick = {
                 onResult { putExtra(GameMenuContract.RESULT_EDIT_TOUCH_CONTROLS, true) }
-            },
-        )
-
-        LemuroidSettingsSwitch(
-            title = { Text(text = stringResource(id = R.string.game_menu_hide_touch_controls)) },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.VisibilityOff,
-                    contentDescription = stringResource(id = R.string.game_menu_hide_touch_controls),
-                )
-            },
-            state = rememberMemoryBooleanSettingState(gameMenuRequest.touchControlsHidden),
-            onCheckedChange = {
-                onResult { putExtra(GameMenuContract.RESULT_TOUCH_CONTROLS_HIDDEN, it) }
             },
         )
 
