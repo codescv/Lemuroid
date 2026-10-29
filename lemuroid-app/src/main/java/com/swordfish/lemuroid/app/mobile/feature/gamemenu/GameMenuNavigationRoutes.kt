@@ -44,21 +44,6 @@ enum class GameMenuRoute(
         titleId = R.string.game_menu_settings,
         parent = HOME,
     ),
-    SAVE_TRANSFER(
-        route = "save_transfer",
-        titleId = R.string.game_menu_save_transfer,
-        parent = HOME,
-    ),
-    EXPORT_STATE(
-        route = "export_state",
-        titleId = R.string.game_menu_export_state,
-        parent = SAVE_TRANSFER,
-    ),
-    IMPORT_STATE(
-        route = "import_state",
-        titleId = R.string.game_menu_import_state,
-        parent = SAVE_TRANSFER,
-    ),
     ;
 
     fun canGoBack(): Boolean {

@@ -2,7 +2,6 @@ package com.swordfish.lemuroid.app.shared.game
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.net.Uri
 import android.view.KeyEvent
 import android.view.MotionEvent
 import androidx.compose.foundation.layout.WindowInsets
@@ -249,40 +248,6 @@ class BaseGameScreenViewModel(
         if (loadingState.value) return
         withLoading {
             saves.loadSlot(index)
-        }
-    }
-
-    suspend fun exportSaveRam(uri: Uri) {
-        if (loadingState.value) return
-        withLoading {
-            saves.exportSaveRam(uri)
-        }
-    }
-
-    suspend fun importSaveRam(uri: Uri) {
-        if (loadingState.value) return
-        withLoading {
-            saves.importSaveRam(uri)
-        }
-    }
-
-    suspend fun exportState(
-        slot: Int,
-        uri: Uri,
-    ) {
-        if (loadingState.value) return
-        withLoading {
-            saves.exportState(slot, uri)
-        }
-    }
-
-    suspend fun importState(
-        slot: Int,
-        uri: Uri,
-    ) {
-        if (loadingState.value) return
-        withLoading {
-            saves.importState(slot, uri)
         }
     }
 

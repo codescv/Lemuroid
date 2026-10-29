@@ -28,10 +28,14 @@ import com.swordfish.lemuroid.app.tv.shared.TVHelper
 import com.swordfish.lemuroid.common.coroutines.launchOnState
 import com.swordfish.lemuroid.common.coroutines.safeCollect
 import com.swordfish.lemuroid.common.coroutines.safeLaunch
+import com.swordfish.lemuroid.lib.core.CoresSelection
 import com.swordfish.lemuroid.lib.injection.PerActivity
 import com.swordfish.lemuroid.lib.injection.PerFragment
 import com.swordfish.lemuroid.lib.library.covers.CustomCoverManager
 import com.swordfish.lemuroid.lib.library.db.RetrogradeDatabase
+import com.swordfish.lemuroid.lib.saves.SavesManager
+import com.swordfish.lemuroid.lib.saves.StatesManager
+import com.swordfish.lemuroid.lib.saves.StatesPreviewManager
 import dagger.Provides
 import dagger.android.ContributesAndroidInjector
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -131,7 +135,22 @@ class MainTVActivity : BaseTVActivity(), BusyActivity {
                 shortcutsGenerator: ShortcutsGenerator,
                 gameLauncher: GameLauncher,
                 customCoverManager: CustomCoverManager,
-            ) = GameInteractor(activity, retrogradeDb, true, shortcutsGenerator, gameLauncher, customCoverManager)
+                savesManager: SavesManager,
+                statesManager: StatesManager,
+                statesPreviewManager: StatesPreviewManager,
+                coresSelection: CoresSelection,
+            ) = GameInteractor(
+                activity,
+                retrogradeDb,
+                true,
+                shortcutsGenerator,
+                gameLauncher,
+                customCoverManager,
+                savesManager,
+                statesManager,
+                statesPreviewManager,
+                coresSelection,
+            )
         }
     }
 }
