@@ -1,6 +1,8 @@
 package com.swordfish.lemuroid.app.mobile.feature.game
 
 import android.graphics.RectF
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Height
 import androidx.compose.material.icons.filled.OpenInFull
@@ -38,9 +41,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.layout
@@ -401,11 +404,13 @@ private fun GameScreenFloatingMenuButton(
         modifier =
             modifier
                 .size(48.dp)
-                .alpha(0.6f),
+                .background(Color(0xFF303030).copy(alpha = 0.65f), CircleShape)
+                .border(1.dp, Color.White.copy(alpha = 0.35f), CircleShape),
     ) {
         Icon(
             painter = painterResource(R.drawable.button_menu),
             contentDescription = stringResource(AppR.string.game_touch_controls_open_menu),
+            tint = Color.White.copy(alpha = 0.85f),
         )
     }
 }
