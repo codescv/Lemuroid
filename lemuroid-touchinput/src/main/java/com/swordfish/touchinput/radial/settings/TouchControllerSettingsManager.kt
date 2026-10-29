@@ -46,6 +46,41 @@ class TouchControllerSettingsManager(private val sharedPreferences: SharedPrefer
     }
 
     private val cachedSettings = mutableMapOf<String, MutableStateFlow<Settings?>>()
+    private val cachedHidden = mutableMapOf<String, MutableStateFlow<Boolean>>()
+
+    fun observeHidden(
+        touchControllerID: TouchControllerID,
+        orientation: Orientation,
+    ): Flow<Boolean> {
+        val hiddenKey = getHiddenPreferenceString(touchControllerID, orientation)
+        return cachedHidden.getOrPut(hiddenKey) {
+            MutableStateFlow(sharedPreferences.getBoolean(hiddenKey, false))
+        }
+    }
+
+    suspend fun storeHidden(
+        touchControllerID: TouchControllerID,
+        orientation: Orientation,
+        hidden: Boolean,
+    ) {
+        Timber.d("Updating touch hidden for $touchControllerID at $orientation to $hidden")
+        updateCachedHidden(touchControllerID, orientation, hidden)
+        withContext(Dispatchers.IO) {
+            sharedPreferences.edit {
+                putBoolean(getHiddenPreferenceString(touchControllerID, orientation), hidden)
+            }
+        }
+    }
+
+    private fun updateCachedHidden(
+        touchControllerID: TouchControllerID,
+        orientation: Orientation,
+        hidden: Boolean,
+    ) {
+        val cacheKey = getHiddenPreferenceString(touchControllerID, orientation)
+        val cacheFlow = cachedHidden.getOrPut(cacheKey) { MutableStateFlow(hidden) }
+        cacheFlow.value = hidden
+    }
 
     fun observeSettings(
         touchControllerID: TouchControllerID,
@@ -136,5 +171,12 @@ class TouchControllerSettingsManager(private val sharedPreferences: SharedPrefer
         orientation: Orientation,
     ): String {
         return "touch_controller_settings_${controllerID}_${orientation.ordinal}"
+    }
+
+    private fun getHiddenPreferenceString(
+        controllerID: TouchControllerID,
+        orientation: Orientation,
+    ): String {
+        return "touch_controller_hidden_${controllerID}_${orientation.ordinal}"
     }
 }

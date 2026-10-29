@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.filled.RotateLeft
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,18 +33,22 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -63,6 +69,7 @@ import com.swordfish.touchinput.radial.ui.LemuroidButtonPressFeedback
 import gg.padkit.PadKit
 import gg.padkit.config.HapticFeedbackType
 import gg.padkit.inputstate.InputState
+import com.swordfish.lemuroid.R as AppR
 
 @Composable
 fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
@@ -164,42 +171,62 @@ fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
                             .onGloballyPositioned { viewportPosition.value = it.boundsInRoot() },
                 )
 
-                val isVisible =
-                    touchControllerSettings != null &&
-                        currentControllerConfig != null &&
-                        touchControlsVisibleState.value
+                val hiddenByUser = viewModel.isTouchControllerHiddenByUser().collectAsState(false).value
+                val gamepadConnected = !touchControlsVisibleState.value
 
-                if (isVisible) {
-                    CompositionLocalProvider(LocalLemuroidPadTheme provides LemuroidPadTheme()) {
-                        if (!isLandscape) {
-                            PadContainer(
-                                modifier = Modifier.layoutId(GameScreenLayout.CONSTRAINTS_BOTTOM_CONTAINER),
-                            )
-                        } else if (!currentControllerConfig.allowTouchOverlay) {
-                            PadContainer(
-                                modifier = Modifier.layoutId(GameScreenLayout.CONSTRAINTS_LEFT_CONTAINER),
-                            )
-                            PadContainer(
-                                modifier = Modifier.layoutId(GameScreenLayout.CONSTRAINTS_RIGHT_CONTAINER),
-                            )
+                if (touchControllerSettings != null && currentControllerConfig != null && !gamepadConnected) {
+                    val padsVisible = !hiddenByUser
+                    val padsMeasureOnly = hiddenByUser && !isLandscape
+
+                    if (padsVisible || padsMeasureOnly) {
+                        key(padsMeasureOnly) {
+                            CompositionLocalProvider(LocalLemuroidPadTheme provides LemuroidPadTheme()) {
+                                if (padsVisible) {
+                                    if (!isLandscape) {
+                                        PadContainer(
+                                            modifier = Modifier.layoutId(GameScreenLayout.CONSTRAINTS_BOTTOM_CONTAINER),
+                                        )
+                                    } else if (!currentControllerConfig.allowTouchOverlay) {
+                                        PadContainer(
+                                            modifier = Modifier.layoutId(GameScreenLayout.CONSTRAINTS_LEFT_CONTAINER),
+                                        )
+                                        PadContainer(
+                                            modifier = Modifier.layoutId(GameScreenLayout.CONSTRAINTS_RIGHT_CONTAINER),
+                                        )
+                                    }
+                                }
+
+                                leftGamePad?.invoke(
+                                    this,
+                                    Modifier
+                                        .layoutId(GameScreenLayout.CONSTRAINTS_LEFT_PAD)
+                                        .measureOnly(padsMeasureOnly),
+                                    touchControllerSettings,
+                                )
+                                rightGamePad?.invoke(
+                                    this,
+                                    Modifier
+                                        .layoutId(GameScreenLayout.CONSTRAINTS_RIGHT_PAD)
+                                        .measureOnly(padsMeasureOnly),
+                                    touchControllerSettings,
+                                )
+
+                                if (padsVisible) {
+                                    GameScreenRunningCentralMenu(
+                                        modifier = Modifier.layoutId(GameScreenLayout.CONSTRAINTS_GAME_CONTAINER),
+                                        controllerConfig = currentControllerConfig,
+                                        touchControllerSettings = touchControllerSettings,
+                                        viewModel = viewModel,
+                                    )
+                                }
+                            }
                         }
+                    }
 
-                        leftGamePad?.invoke(
-                            this,
-                            Modifier.layoutId(GameScreenLayout.CONSTRAINTS_LEFT_PAD),
-                            touchControllerSettings,
-                        )
-                        rightGamePad?.invoke(
-                            this,
-                            Modifier.layoutId(GameScreenLayout.CONSTRAINTS_RIGHT_PAD),
-                            touchControllerSettings,
-                        )
-
-                        GameScreenRunningCentralMenu(
-                            modifier = Modifier.layoutId(GameScreenLayout.CONSTRAINTS_GAME_CONTAINER),
-                            controllerConfig = currentControllerConfig,
-                            touchControllerSettings = touchControllerSettings,
-                            viewModel = viewModel,
+                    if (hiddenByUser) {
+                        GameScreenFloatingMenuButton(
+                            modifier = Modifier.layoutId(GameScreenLayout.CONSTRAINTS_FLOATING_MENU),
+                            onClick = { viewModel.showGameMenu() },
                         )
                     }
                 }
@@ -361,5 +388,34 @@ private fun MenuEditTouchControlRow(
             contentDescription = label,
         )
         slider()
+    }
+}
+
+@Composable
+private fun GameScreenFloatingMenuButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    IconButton(
+        onClick = onClick,
+        modifier =
+            modifier
+                .size(48.dp)
+                .alpha(0.6f),
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.button_menu),
+            contentDescription = stringResource(AppR.string.game_touch_controls_open_menu),
+        )
+    }
+}
+
+private fun Modifier.measureOnly(enabled: Boolean): Modifier {
+    if (!enabled) return this
+    return layout { measurable, constraints ->
+        val placeable = measurable.measure(constraints)
+        layout(placeable.width, placeable.height) {
+            // Intentionally not placed so ConstraintLayout solves identical bounds without rendering or hit-testing.
+        }
     }
 }

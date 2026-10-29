@@ -26,11 +26,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -49,6 +52,16 @@ class GameViewModelTouchControls(
     private val menuPressed = MutableStateFlow(false)
     private val showEditControls = MutableStateFlow(false)
     private val hapticFeedbackMode = MutableStateFlow(HapticFeedbackMode.NONE)
+
+    val touchControlsHidden: StateFlow<Boolean> =
+        combine(
+            touchControlId,
+            screenOrientation,
+        ) { touchControlId, orientation -> touchControlId to orientation }
+            .flatMapLatest { (touchControlId, orientation) ->
+                touchControllerSettingsManager.observeHidden(touchControlId, orientation)
+            }
+            .stateIn(scope, SharingStarted.Eagerly, false)
 
     private var loadingMenuJob: Job? = null
 
@@ -108,6 +121,27 @@ class GameViewModelTouchControls(
     fun isTouchControllerVisible(): Flow<Boolean> {
         return inputs.getEnabledInputDevices()
             .map { it.isEmpty() }
+    }
+
+    fun isTouchControllerHiddenByUser(): Flow<Boolean> {
+        return touchControlsHidden
+    }
+
+    fun setTouchControlsHidden(hidden: Boolean) {
+        if (hidden) {
+            onMenuPressed(false)
+        }
+        scope.launch {
+            touchControllerSettingsManager.storeHidden(
+                touchControlId.value,
+                screenOrientation.value,
+                hidden,
+            )
+        }
+    }
+
+    fun requestMenu() {
+        sideEffects.showMenu(tilt, inputs)
     }
 
     fun getTouchControllerConfig(): Flow<ControllerConfig> {

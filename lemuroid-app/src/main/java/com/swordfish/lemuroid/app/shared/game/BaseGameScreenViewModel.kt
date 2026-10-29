@@ -229,6 +229,24 @@ class BaseGameScreenViewModel(
         return touchControls.getTouchControllerConfig()
     }
 
+    fun isTouchControllerHiddenByUser(): Flow<Boolean> {
+        return touchControls.isTouchControllerHiddenByUser()
+    }
+
+    fun getTouchControlsHiddenValue(): Boolean {
+        return touchControls.touchControlsHidden.value
+    }
+
+    fun setTouchControlsHidden(hidden: Boolean) {
+        touchControls.setTouchControlsHidden(hidden)
+    }
+
+    fun showGameMenu() {
+        if (!loadingState.value) {
+            touchControls.requestMenu()
+        }
+    }
+
     fun changeTiltConfiguration(tiltConfig: TiltConfiguration) {
         tilt.changeTiltConfiguration(tiltConfig)
     }
