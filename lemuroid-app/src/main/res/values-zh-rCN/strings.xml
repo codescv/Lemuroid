@@ -185,4 +185,21 @@
     <string name="tilt_configuration_buttons_l_r">L - R</string>
     <string name="tilt_configuration_buttons_l1_r1">L1-R1</string>
     <string name="tilt_configuration_buttons_l2_r2">L2-R2</string>
+    <string name="game_menu_save_transfer">存档导入 / 导出</string>
+    <string name="game_menu_export_sram">导出游戏内置存档 (.srm)</string>
+    <string name="game_menu_import_sram">导入游戏内置存档 (.srm)</string>
+    <string name="game_menu_export_state">导出即时存档</string>
+    <string name="game_menu_import_state">导入即时存档</string>
+    <string name="game_menu_save_transfer_sram_subtitle">游戏内置存档，与 RetroArch 通用</string>
+    <string name="game_menu_save_transfer_state_subtitle">Lemuroid 即时存档包 (.zip)</string>
+    <string name="game_toast_save_exported">存档已导出</string>
+    <string name="game_toast_save_export_no_data">该游戏暂无游戏内置存档数据</string>
+    <string name="game_toast_save_import_unsupported">该游戏不使用游戏内置存档</string>
+    <string name="game_toast_save_import_size_mismatch">存档文件无效：应不超过 %1$d 字节，实际 %2$d 字节</string>
+    <string name="game_toast_save_imported_restart">存档已导入，游戏已重新开始</string>
+    <string name="game_toast_state_exported">即时存档 %1$s 已导出</string>
+    <string name="game_toast_state_imported">即时存档已导入到存档位 %1$s</string>
+    <string name="game_toast_state_import_invalid">不是有效的 Lemuroid 即时存档文件</string>
+    <string name="game_toast_state_import_wrong_core">该即时存档来自其他核心 (%1$s)</string>
+    <string name="game_toast_save_transfer_failed">操作失败：%1$s</string>
 </resources>

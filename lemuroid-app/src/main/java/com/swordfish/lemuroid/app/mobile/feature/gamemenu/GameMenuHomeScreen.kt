@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
@@ -54,6 +55,17 @@ fun GameMenuHomeScreen(
                 onClick = { navController.navigateToRoute(GameMenuRoute.LOAD) },
             )
         }
+
+        LemuroidSettingsMenuLink(
+            title = { Text(text = stringResource(id = R.string.game_menu_save_transfer)) },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.ImportExport,
+                    contentDescription = stringResource(id = R.string.game_menu_save_transfer),
+                )
+            },
+            onClick = { navController.navigateToRoute(GameMenuRoute.SAVE_TRANSFER) },
+        )
 
         LemuroidSettingsMenuLink(
             title = { Text(text = stringResource(id = R.string.game_menu_quit)) },
