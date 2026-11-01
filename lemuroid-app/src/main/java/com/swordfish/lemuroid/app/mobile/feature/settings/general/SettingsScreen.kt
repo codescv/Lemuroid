@@ -4,7 +4,11 @@ import android.net.Uri
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -14,6 +18,8 @@ import com.swordfish.lemuroid.R
 import com.swordfish.lemuroid.app.mobile.feature.main.MainRoute
 import com.swordfish.lemuroid.app.mobile.feature.main.navigateToRoute
 import com.swordfish.lemuroid.app.shared.library.LibraryIndexScheduler
+import com.swordfish.lemuroid.app.shared.update.AgentFeedbackDialog
+import com.swordfish.lemuroid.app.shared.update.AgentFeedbackHelper
 import com.swordfish.lemuroid.app.shared.update.UpdateManager
 import com.swordfish.lemuroid.app.shared.update.UpdateState
 import com.swordfish.lemuroid.app.utils.android.settings.LemuroidCardSettingsGroup
@@ -73,6 +79,12 @@ private fun MiscSettings(
     viewModel: SettingsViewModel,
     navController: NavController,
 ) {
+    val context = LocalContext.current
+    var savedFeedbackEmail by remember {
+        mutableStateOf(AgentFeedbackHelper.getSavedEmail(context))
+    }
+    var showAgentFeedbackDialog by rememberSaveable { mutableStateOf(false) }
+
     LemuroidCardSettingsGroup(
         title = { Text(text = stringResource(id = R.string.settings_category_misc)) },
     ) {
@@ -148,6 +160,29 @@ private fun MiscSettings(
                 },
             )
         }
+        val feedbackSubtitle =
+            if (savedFeedbackEmail.isBlank()) {
+                stringResource(id = R.string.agent_feedback_subtitle_unset)
+            } else {
+                stringResource(id = R.string.agent_feedback_subtitle_configured, savedFeedbackEmail)
+            }
+        LemuroidSettingsMenuLink(
+            title = { Text(text = stringResource(id = R.string.agent_feedback_title)) },
+            subtitle = { Text(text = feedbackSubtitle) },
+            onClick = {
+                savedFeedbackEmail = AgentFeedbackHelper.getSavedEmail(context)
+                showAgentFeedbackDialog = true
+            },
+        )
+    }
+
+    if (showAgentFeedbackDialog) {
+        AgentFeedbackDialog(
+            initialEmail = savedFeedbackEmail,
+            currentVersion = viewModel.currentVersion,
+            onEmailSaved = { savedFeedbackEmail = it },
+            onDismiss = { showAgentFeedbackDialog = false },
+        )
     }
 }
 

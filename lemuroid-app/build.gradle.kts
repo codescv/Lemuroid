@@ -10,8 +10,8 @@ plugins {
 
 android {
     defaultConfig {
-        versionCode = 255
-        versionName = "1.17.3" // Always remember to update Cores Tag!
+        versionCode = 256
+        versionName = "1.17.4" // Always remember to update Cores Tag!
         applicationId = "com.swordfish.lemuroid"
     }
     flavorDimensions += listOf("opensource", "cores")

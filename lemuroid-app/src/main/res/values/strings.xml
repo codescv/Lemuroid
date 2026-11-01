@@ -302,4 +302,22 @@
     <string name="update_error_no_apk">This release has no APK asset</string>
     <string name="update_error_installer">Cannot start package installer</string>
 
+    <string name="agent_feedback_title">Agent Feedback</string>
+    <string name="agent_feedback_subtitle_unset">Configure Agent feedback email and send one-click feedback</string>
+    <string name="agent_feedback_subtitle_configured">Send feedback to %1$s</string>
+    <string name="agent_feedback_dialog_title">Send Feedback to Agent</string>
+    <string name="agent_feedback_subject_preview">Subject: %1$s</string>
+    <string name="agent_feedback_email_label">Agent Feedback Email</string>
+    <string name="agent_feedback_email_hint">Stored locally on this device only</string>
+    <string name="agent_feedback_email_invalid">Please enter a valid email address</string>
+    <string name="agent_feedback_email_saved">Agent feedback email saved</string>
+    <string name="agent_feedback_summary_label">Summary</string>
+    <string name="agent_feedback_summary_placeholder">Brief description of issue or feature request</string>
+    <string name="agent_feedback_summary_required">Please enter a feedback summary or details</string>
+    <string name="agent_feedback_details_label">Details (optional)</string>
+    <string name="agent_feedback_details_placeholder">Steps to reproduce or expected behavior. You can also attach screenshots in your email app.</string>
+    <string name="agent_feedback_action_save_email">Save Email</string>
+    <string name="agent_feedback_action_send">Send Feedback</string>
+    <string name="agent_feedback_no_email_app">No email app found on this device</string>
+
 </resources>
