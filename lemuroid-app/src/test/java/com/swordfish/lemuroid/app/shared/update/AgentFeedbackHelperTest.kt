@@ -100,6 +100,100 @@ class AgentFeedbackHelperTest {
     }
 
     @Test
+    fun resolveSummaryFallsBackToImageNameWhenOnlyImageIsAttached() {
+        assertEquals(
+            "Image: screenshot.png",
+            AgentFeedbackHelper.resolveSummary("  ", "\n  \n", attachmentName = " screenshot.png "),
+        )
+        assertEquals(
+            "Explicit title",
+            AgentFeedbackHelper.resolveSummary("Explicit title", "", attachmentName = "screenshot.png"),
+        )
+        assertEquals(
+            "First detail line",
+            AgentFeedbackHelper.resolveSummary("", "First detail line", attachmentName = "screenshot.png"),
+        )
+        assertEquals("", AgentFeedbackHelper.resolveSummary("", "", attachmentName = null))
+        assertEquals("", AgentFeedbackHelper.resolveSummary("", "", attachmentName = "   "))
+
+        val longName = "n".repeat(80) + ".png"
+        val truncated = AgentFeedbackHelper.resolveSummary("", "", attachmentName = longName)
+        assertEquals(61, truncated.length)
+        assertTrue(truncated.startsWith("Image: "))
+        assertTrue(truncated.endsWith("…"))
+
+        assertEquals(
+            "lemuroid: [v1.17.5] Image: screenshot.png",
+            AgentFeedbackHelper.formatSubject(
+                AgentFeedbackHelper.resolveSummary("", "", attachmentName = "screenshot.png"),
+                versionName = "1.17.5",
+            ),
+        )
+    }
+
+    @Test
+    fun formatEmailBodyIncludesAttachmentLineBeforeAppMetadata() {
+        val withDetails =
+            AgentFeedbackHelper.formatEmailBody(
+                summary = "Crash",
+                details = "Steps\r\nhere",
+                versionName = "1.17.5-DEBUG",
+                versionCode = 257,
+                attachmentName = "crash.png",
+            )
+        assertEquals("Steps\nhere\n\nAttachment: crash.png\n\n---\nApp: Lemuroid v1.17.5 (257)", withDetails)
+
+        val imageOnlySummary = AgentFeedbackHelper.resolveSummary("", "", attachmentName = "shot.jpg")
+        val imageOnly =
+            AgentFeedbackHelper.formatEmailBody(
+                summary = imageOnlySummary,
+                details = "",
+                versionName = "1.17.5",
+                versionCode = 257,
+                attachmentName = "shot.jpg",
+            )
+        assertEquals("Image: shot.jpg\n\nAttachment: shot.jpg\n\n---\nApp: Lemuroid v1.17.5 (257)", imageOnly)
+
+        val injected =
+            AgentFeedbackHelper.formatEmailBody(
+                summary = "S",
+                details = "",
+                versionName = "1.17.5",
+                versionCode = 257,
+                attachmentName = "a\r\nb.png",
+            )
+        assertEquals("S\n\nAttachment: a b.png\n\n---\nApp: Lemuroid v1.17.5 (257)", injected)
+
+        val withoutAttachment =
+            AgentFeedbackHelper.formatEmailBody(
+                summary = "S",
+                details = "",
+                versionName = "1.17.5",
+                versionCode = 257,
+                attachmentName = null,
+            )
+        assertEquals("S\n\n---\nApp: Lemuroid v1.17.5 (257)", withoutAttachment)
+        assertEquals(
+            withoutAttachment,
+            AgentFeedbackHelper.formatEmailBody(summary = "S", details = "", versionName = "1.17.5", versionCode = 257),
+        )
+    }
+
+    @Test
+    fun sanitizeAttachmentNameStripsPathsAndUnsafeCharsAndAddsExtension() {
+        assertEquals("shot.png", AgentFeedbackHelper.sanitizeAttachmentName("shot.png", "jpg"))
+        assertEquals("passwd", AgentFeedbackHelper.sanitizeAttachmentName("../../etc/passwd"))
+        assertEquals("evil.png", AgentFeedbackHelper.sanitizeAttachmentName("C:\\dir\\evil.png"))
+        assertEquals("a_b_c.png", AgentFeedbackHelper.sanitizeAttachmentName("a:b\nc", "png"))
+        assertEquals("feedback_image.jpg", AgentFeedbackHelper.sanitizeAttachmentName(null, "jpg"))
+        assertEquals("feedback_image", AgentFeedbackHelper.sanitizeAttachmentName("  ", null))
+        assertEquals("feedback_image", AgentFeedbackHelper.sanitizeAttachmentName("..", "*"))
+        val longName = AgentFeedbackHelper.sanitizeAttachmentName("x".repeat(300) + ".webp")
+        assertEquals(100, longName.length)
+        assertTrue(longName.endsWith(".webp"))
+    }
+
+    @Test
     fun buildMailtoUriPercentEncodesSubjectAndBodyWithPercent20AndUtf8() {
         val uriWithoutBody =
             AgentFeedbackHelper.buildMailtoUri(

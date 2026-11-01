@@ -1,6 +1,9 @@
 package com.swordfish.lemuroid.app.shared.update
 
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,11 +23,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.swordfish.lemuroid.BuildConfig
 import com.swordfish.lemuroid.R
@@ -42,9 +48,26 @@ fun AgentFeedbackDialog(
     var detailsInput by rememberSaveable { mutableStateOf("") }
     var emailError by rememberSaveable { mutableStateOf(false) }
     var summaryError by rememberSaveable { mutableStateOf(false) }
+    var attachedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var attachedImageName by rememberSaveable { mutableStateOf<String?>(null) }
+
+    val imagePickerLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            if (uri != null) {
+                attachedImageUri = uri
+                attachedImageName =
+                    AgentFeedbackHelper.sanitizeAttachmentName(AgentFeedbackHelper.queryDisplayName(context, uri))
+                if (summaryError) summaryError = false
+            }
+        }
 
     val normalizedEmail = AgentFeedbackHelper.normalizeEmail(emailInput)
-    val effectiveSummary = AgentFeedbackHelper.resolveSummary(summaryInput, detailsInput)
+    val effectiveSummary =
+        AgentFeedbackHelper.resolveSummary(
+            summary = summaryInput,
+            details = detailsInput,
+            attachmentName = if (attachedImageUri != null) attachedImageName else null,
+        )
     val subjectPreview = AgentFeedbackHelper.formatSubject(effectiveSummary, currentVersion)
     val emailChanged = normalizedEmail != AgentFeedbackHelper.normalizeEmail(initialEmail)
 
@@ -124,16 +147,58 @@ fun AgentFeedbackDialog(
                     maxLines = 6,
                     modifier = Modifier.fillMaxWidth(),
                 )
+
+                OutlinedButton(
+                    onClick = { imagePickerLauncher.launch("image/*") },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text =
+                            stringResource(
+                                id =
+                                    if (attachedImageUri == null) {
+                                        R.string.agent_feedback_add_image
+                                    } else {
+                                        R.string.agent_feedback_change_image
+                                    },
+                            ),
+                    )
+                }
+
+                if (attachedImageUri != null) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            text = attachedImageName.orEmpty(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
+                        TextButton(
+                            onClick = {
+                                attachedImageUri = null
+                                attachedImageName = null
+                            },
+                        ) {
+                            Text(text = "✕ " + stringResource(id = R.string.agent_feedback_remove_image))
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
             Button(
                 onClick = {
                     val validEmail = AgentFeedbackHelper.isValidEmail(normalizedEmail)
-                    val hasSummary = effectiveSummary.isNotEmpty()
+                    val hasContent =
+                        summaryInput.isNotBlank() || detailsInput.isNotBlank() || attachedImageUri != null
                     emailError = !validEmail
-                    summaryError = !hasSummary
-                    if (!validEmail || !hasSummary) return@Button
+                    summaryError = !hasContent
+                    if (!validEmail || !hasContent) return@Button
 
                     AgentFeedbackHelper.saveEmail(context, normalizedEmail)
                     onEmailSaved(normalizedEmail)
@@ -144,6 +209,8 @@ fun AgentFeedbackDialog(
                             summary = effectiveSummary,
                             details = detailsInput,
                             versionName = currentVersion,
+                            attachmentUri = attachedImageUri,
+                            attachmentName = attachedImageName,
                         )
                     if (launched) {
                         onDismiss()
