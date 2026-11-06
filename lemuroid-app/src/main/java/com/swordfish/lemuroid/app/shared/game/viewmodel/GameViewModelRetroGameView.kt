@@ -36,6 +36,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filterIsInstance
@@ -74,6 +75,22 @@ class GameViewModelRetroGameView(
 
     private val retroGameViewFlow = MutableStateFlow<GLRetroView?>(null)
     var retroGameView: GLRetroView? by MutableStateProperty(retroGameViewFlow)
+
+    private val fastForward = FastForwardController(system.fastForwardSupport)
+
+    val fastForwardSupported: Boolean
+        get() = fastForward.supported
+
+    val fastForwardEnabled: StateFlow<Boolean>
+        get() = fastForward.enabled
+
+    fun setFastForward(enabled: Boolean) {
+        fastForward.setEnabled(enabled)
+    }
+
+    fun toggleFastForward() {
+        fastForward.toggle()
+    }
 
     fun getGameState(): Flow<GameState> {
         return gameState.debounce(200)
@@ -163,6 +180,9 @@ class GameViewModelRetroGameView(
         val currentState = gameState.value
         if (currentState !is GameState.Loaded) throw IllegalStateException("Game is not loaded.")
 
+        // The previous view (if any) is gone: never push speed changes to it.
+        fastForward.unbind()
+
         val result =
             GLRetroView(context, currentState.retroViewData)
                 .apply {
@@ -186,6 +206,17 @@ class GameViewModelRetroGameView(
         gameState.value = GameState.Ready
 
         return currentState.gameData to result
+    }
+
+    /**
+     * Applies the current fast forward state to [retroView] once it has rendered its first frame (the core is
+     * guaranteed to be running at that point) and keeps it in sync afterwards. This restores 2x speed when the
+     * view is recreated while fast forward is enabled.
+     */
+    suspend fun bindFastForward(retroView: GLRetroView) {
+        waitGLEvent<GLRetroView.GLRetroEvents.FrameRendered>()
+        if (retroGameView !== retroView) return
+        fastForward.bind { retroView.frameSpeed = it }
     }
 
     suspend fun retroGameViewFlow() =

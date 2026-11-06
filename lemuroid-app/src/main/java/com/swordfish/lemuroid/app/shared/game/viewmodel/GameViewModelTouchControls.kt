@@ -52,6 +52,12 @@ class GameViewModelTouchControls(
 
     private var loadingMenuJob: Job? = null
 
+    private val virtualButtonRouter =
+        VirtualButtonRouter(
+            onFastForwardToggle = { retroGameView.toggleFastForward() },
+            sendKeyEvent = { action, keyCode -> retroGameView.retroGameView?.sendKeyEvent(action, keyCode) },
+        )
+
     override fun onCreate(owner: LifecycleOwner) {
         owner.launchOnState(Lifecycle.State.CREATED) {
             getTouchControllerConfig().safeCollect {
@@ -168,9 +174,13 @@ class GameViewModelTouchControls(
         showEditControls.value = show
     }
 
+    fun resetVirtualInputState() {
+        virtualButtonRouter.reset()
+    }
+
     private fun handleVirtualInputButton(event: InputEvent.Button) {
-        val action = if (event.pressed) KeyEvent.ACTION_DOWN else KeyEvent.ACTION_UP
-        retroGameView.retroGameView?.sendKeyEvent(action, event.id)
+        // The synthetic fast forward key is consumed by the router and never reaches the core.
+        virtualButtonRouter.route(event.id, event.pressed)
     }
 
     private fun handleVirtualInputDirection(

@@ -19,9 +19,11 @@ class LemuroidPadTheme {
 
     private val icons = gray(0.0f, 0.50f)
     private val iconsPressed = gray(1.0f, 0.50f)
+    private val iconsActive = gray(1.0f, 0.90f)
 
     private val level3Fill = gray(1.0f, 0.50f)
     private val level3FillPressed = gray(0.0f, 0.50f)
+    private val level3FillActive = Color(1.0f, 0.60f, 0.0f, 0.75f)
     val level3Shadow = DefaultShadowColor.copy(0.05f)
     val level3ShadowWidth = 4.dp
 
@@ -48,18 +50,36 @@ class LemuroidPadTheme {
     }
 
     fun foregroundFill(pressed: Boolean): Color {
-        return if (pressed) {
-            level3FillPressed
-        } else {
-            level3Fill
+        return foregroundFill(pressed, active = false)
+    }
+
+    /**
+     * Foreground fill of a toggle button (e.g. fast forward). While [active] it uses a strong accent fill which
+     * stays recognizable on both dark and bright game scenes; pressing it still shows the regular pressed fill.
+     */
+    fun foregroundFill(
+        pressed: Boolean,
+        active: Boolean,
+    ): Color {
+        return when {
+            pressed -> level3FillPressed
+            active -> level3FillActive
+            else -> level3Fill
         }
     }
 
     fun icons(pressed: Boolean): Color {
-        return if (pressed) {
-            iconsPressed
-        } else {
-            icons
+        return icons(pressed, active = false)
+    }
+
+    fun icons(
+        pressed: Boolean,
+        active: Boolean,
+    ): Color {
+        return when {
+            pressed -> iconsPressed
+            active -> iconsActive
+            else -> icons
         }
     }
 }

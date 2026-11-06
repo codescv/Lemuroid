@@ -10,8 +10,8 @@ import com.swordfish.touchinput.radial.controls.LemuroidControlButton
 import com.swordfish.touchinput.radial.controls.LemuroidControlCross
 import com.swordfish.touchinput.radial.controls.LemuroidControlFaceButtons
 import com.swordfish.touchinput.radial.layouts.shared.ComposeTouchLayouts
+import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonFastForward
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonMenu
-import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonMenuPlaceholder
 import com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager
 import com.swordfish.touchinput.radial.ui.LemuroidButtonForeground
 import gg.padkit.PadKitScope
@@ -39,7 +39,7 @@ fun PadKitScope.Atari2600Left(
                 id = Id.Key(KeyEvent.KEYCODE_BUTTON_L2),
                 label = "DIFF.B",
             )
-            SecondaryButtonMenuPlaceholder(settings)
+            SecondaryButtonFastForward(settings)
         },
     )
 }

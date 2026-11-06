@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -56,7 +57,9 @@ import com.swordfish.lemuroid.app.shared.game.viewmodel.GameViewModelTouchContro
 import com.swordfish.lemuroid.app.shared.settings.HapticFeedbackMode
 import com.swordfish.lemuroid.lib.controller.ControllerConfig
 import com.swordfish.touchinput.controller.R
+import com.swordfish.touchinput.radial.LemuroidFastForwardState
 import com.swordfish.touchinput.radial.LemuroidPadTheme
+import com.swordfish.touchinput.radial.LocalLemuroidFastForward
 import com.swordfish.touchinput.radial.LocalLemuroidPadTheme
 import com.swordfish.touchinput.radial.sensors.TiltConfiguration
 import com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager
@@ -110,6 +113,12 @@ fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
                 HapticFeedbackMode.PRESS -> HapticFeedbackType.PRESS
                 HapticFeedbackMode.PRESS_RELEASE -> HapticFeedbackType.PRESS_RELEASE
             }
+
+        val fastForwardEnabledState = viewModel.fastForwardEnabled.collectAsState()
+
+        DisposableEffect(viewModel) {
+            onDispose { viewModel.onVirtualPadDisposed() }
+        }
 
         PadKit(
             modifier = Modifier.fillMaxSize(),
@@ -173,7 +182,17 @@ fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
 
                     if (padsComposed) {
                         key(padsMeasureOnly) {
-                            CompositionLocalProvider(LocalLemuroidPadTheme provides LemuroidPadTheme()) {
+                            // Supported or not, the fast forward slot keeps the same footprint, so the pads (and
+                            // the game viewport) have identical bounds even when they are only measured.
+                            val fastForwardState =
+                                LemuroidFastForwardState(
+                                    supported = viewModel.fastForwardSupported,
+                                    active = fastForwardEnabledState.value,
+                                )
+                            CompositionLocalProvider(
+                                LocalLemuroidPadTheme provides LemuroidPadTheme(),
+                                LocalLemuroidFastForward provides fastForwardState,
+                            ) {
                                 if (touchControlsVisible) {
                                     if (!isLandscape) {
                                         PadContainer(

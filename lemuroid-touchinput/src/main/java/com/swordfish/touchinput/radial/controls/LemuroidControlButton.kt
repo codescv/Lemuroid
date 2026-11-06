@@ -18,12 +18,13 @@ fun LemuroidControlButton(
     id: Id.Key,
     label: String? = null,
     icon: Int? = null,
+    active: Boolean = false,
 ) {
     val theme = LocalLemuroidPadTheme.current
     ControlButton(
         modifier = modifier.padding(theme.padding),
         id = id,
-        foreground = { LemuroidButtonForeground(pressed = it, icon = icon, label = label) },
+        foreground = { LemuroidButtonForeground(pressed = it, icon = icon, label = label, active = active) },
         background = { LemuroidControlBackground() },
     )
 }

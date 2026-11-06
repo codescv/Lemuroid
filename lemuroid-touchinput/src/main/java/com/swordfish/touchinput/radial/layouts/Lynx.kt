@@ -1,6 +1,7 @@
 package com.swordfish.touchinput.radial.layouts
 
 import android.view.KeyEvent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
@@ -8,6 +9,8 @@ import com.swordfish.touchinput.radial.controls.LemuroidControlButton
 import com.swordfish.touchinput.radial.controls.LemuroidControlCross
 import com.swordfish.touchinput.radial.controls.LemuroidControlFaceButtons
 import com.swordfish.touchinput.radial.layouts.shared.ComposeTouchLayouts
+import com.swordfish.touchinput.radial.layouts.shared.FastForwardPlacement
+import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonFastForward
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonMenu
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonStart
 import com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager
@@ -37,6 +40,7 @@ fun PadKitScope.LynxLeft(
                 id = Id.Key(KeyEvent.KEYCODE_BUTTON_R1),
                 label = "OPTION 2",
             )
+            SecondaryButtonFastForward(FastForwardPlacement.LYNX)
         },
     )
 }
@@ -67,6 +71,8 @@ fun PadKitScope.LynxRight(
         secondaryDials = {
             SecondaryButtonStart()
             SecondaryButtonMenu(settings)
+            // Mirrors the fast forward button of the left pad to keep both pads the same size.
+            Box(modifier = Modifier.radialPosition(180f - FastForwardPlacement.LYNX))
         },
     )
 }

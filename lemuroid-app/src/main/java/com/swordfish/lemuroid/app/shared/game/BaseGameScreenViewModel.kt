@@ -41,6 +41,7 @@ import gg.padkit.inputstate.InputState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -187,6 +188,9 @@ class BaseGameScreenViewModel(
                 saves.restoreAutoSaveAsync(it)
             }
         }
+        viewModelScope.launch {
+            retroGameView.bindFastForward(result)
+        }
         return result
     }
 
@@ -267,11 +271,20 @@ class BaseGameScreenViewModel(
         }
     }
 
+    val fastForwardSupported: Boolean
+        get() = retroGameView.fastForwardSupported
+
+    val fastForwardEnabled: StateFlow<Boolean>
+        get() = retroGameView.fastForwardEnabled
+
     fun toggleFastForward() {
-        Timber.d("Loading quick save")
-        retroGameView.retroGameView?.apply {
-            frameSpeed = if (frameSpeed == 1) 2 else 1
-        }
+        Timber.d("Toggling fast forward")
+        retroGameView.toggleFastForward()
+    }
+
+    fun setFastForward(enabled: Boolean) {
+        Timber.d("Setting fast forward: $enabled")
+        retroGameView.setFastForward(enabled)
     }
 
     suspend fun reset() =
@@ -305,6 +318,10 @@ class BaseGameScreenViewModel(
 
     fun handleVirtualInputEvent(events: List<InputEvent>) {
         touchControls.handleVirtualInputEvent(events)
+    }
+
+    fun onVirtualPadDisposed() {
+        touchControls.resetVirtualInputState()
     }
 
     override fun onCreate(owner: LifecycleOwner) {

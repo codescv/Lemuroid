@@ -10,10 +10,10 @@ import com.swordfish.touchinput.radial.controls.LemuroidControlFaceButtons
 import com.swordfish.touchinput.radial.layouts.shared.ComposeTouchLayouts
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryAnalogLeft
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryAnalogRight
+import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonFastForward
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonL1
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonL2
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonMenu
-import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonMenuPlaceholder
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonR1
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonR2
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonSelect
@@ -38,7 +38,7 @@ fun PadKitScope.PSXDualShockLeft(
             SecondaryButtonL1()
             SecondaryButtonL2()
             SecondaryButtonSelect(position = 2)
-            SecondaryButtonMenuPlaceholder(settings)
+            SecondaryButtonFastForward(settings)
             SecondaryAnalogLeft()
         },
     )

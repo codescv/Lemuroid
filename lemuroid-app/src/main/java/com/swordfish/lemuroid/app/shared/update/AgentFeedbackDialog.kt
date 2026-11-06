@@ -44,6 +44,11 @@ fun AgentFeedbackDialog(
     val context = LocalContext.current
 
     var emailInput by rememberSaveable { mutableStateOf(initialEmail) }
+    // Baseline used to decide whether "save email" is offered. It follows initialEmail (which the caller updates
+    // through onEmailSaved) and survives configuration changes while the dialog stays open.
+    var lastSavedEmail by rememberSaveable(initialEmail) {
+        mutableStateOf(AgentFeedbackHelper.normalizeEmail(initialEmail))
+    }
     var summaryInput by rememberSaveable { mutableStateOf("") }
     var detailsInput by rememberSaveable { mutableStateOf("") }
     var emailError by rememberSaveable { mutableStateOf(false) }
@@ -69,7 +74,7 @@ fun AgentFeedbackDialog(
             attachmentName = if (attachedImageUri != null) attachedImageName else null,
         )
     val subjectPreview = AgentFeedbackHelper.formatSubject(effectiveSummary, currentVersion)
-    val emailChanged = normalizedEmail != AgentFeedbackHelper.normalizeEmail(initialEmail)
+    val emailChanged = AgentFeedbackHelper.isEmailChanged(emailInput, lastSavedEmail)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -200,8 +205,10 @@ fun AgentFeedbackDialog(
                     summaryError = !hasContent
                     if (!validEmail || !hasContent) return@Button
 
-                    AgentFeedbackHelper.saveEmail(context, normalizedEmail)
-                    onEmailSaved(normalizedEmail)
+                    if (AgentFeedbackHelper.saveEmail(context, normalizedEmail)) {
+                        lastSavedEmail = normalizedEmail
+                        onEmailSaved(normalizedEmail)
+                    }
                     val launched =
                         AgentFeedbackHelper.launchFeedbackEmail(
                             context = context,
@@ -228,17 +235,25 @@ fun AgentFeedbackDialog(
                 if (emailChanged) {
                     TextButton(
                         onClick = {
-                            if (normalizedEmail.isNotEmpty() && !AgentFeedbackHelper.isValidEmail(normalizedEmail)) {
-                                emailError = true
-                                return@TextButton
-                            }
-                            if (AgentFeedbackHelper.saveEmail(context, normalizedEmail)) {
-                                onEmailSaved(normalizedEmail)
+                            // Saving the email keeps the dialog open: title, description and image are preserved.
+                            val result =
+                                AgentFeedbackHelper.saveEmailFromDialog(
+                                    emailInput = emailInput,
+                                    lastSavedEmail = lastSavedEmail,
+                                    persist = { AgentFeedbackHelper.saveEmail(context, it) },
+                                )
+                            emailInput = result.emailInput
+                            emailError = result.emailError
+                            lastSavedEmail = result.lastSavedEmail
+                            if (result.saved) {
+                                onEmailSaved(result.lastSavedEmail)
                                 Toast.makeText(
                                     context.applicationContext,
                                     context.getString(R.string.agent_feedback_email_saved),
                                     Toast.LENGTH_SHORT,
                                 ).show()
+                            }
+                            if (result.shouldDismiss) {
                                 onDismiss()
                             }
                         },

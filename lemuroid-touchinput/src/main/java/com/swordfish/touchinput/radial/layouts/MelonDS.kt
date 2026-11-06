@@ -11,6 +11,8 @@ import com.swordfish.touchinput.radial.controls.LemuroidControlButton
 import com.swordfish.touchinput.radial.controls.LemuroidControlCross
 import com.swordfish.touchinput.radial.controls.LemuroidControlFaceButtons
 import com.swordfish.touchinput.radial.layouts.shared.ComposeTouchLayouts
+import com.swordfish.touchinput.radial.layouts.shared.FastForwardPlacement
+import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonFastForward
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonL
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonMenu
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonMenuPlaceholder
@@ -37,6 +39,7 @@ fun PadKitScope.MelonDSLeft(
             SecondaryButtonL()
             SecondaryButtonSelect(position = 2)
             SecondaryButtonMenuPlaceholder(settings)
+            SecondaryButtonFastForward(FastForwardPlacement.DUAL_SCREEN)
             LemuroidControlButton(
                 modifier = Modifier.radialPosition(-120f),
                 id = Id.Key(KeyEvent.KEYCODE_BUTTON_L2),
@@ -82,6 +85,8 @@ fun PadKitScope.MelonDSRight(
             SecondaryButtonStart(position = 2)
             SecondaryButtonMenu(settings)
             Box(modifier = Modifier.fillMaxSize().radialPosition(-120f))
+            // Mirrors the fast forward button of the left pad to keep both pads the same size.
+            Box(modifier = Modifier.fillMaxSize().radialPosition(180f - FastForwardPlacement.DUAL_SCREEN))
         },
     )
 }

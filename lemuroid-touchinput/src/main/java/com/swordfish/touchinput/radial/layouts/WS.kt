@@ -8,8 +8,8 @@ import androidx.compose.ui.Modifier
 import com.swordfish.touchinput.radial.controls.LemuroidControlCross
 import com.swordfish.touchinput.radial.controls.LemuroidControlFaceButtons
 import com.swordfish.touchinput.radial.layouts.shared.ComposeTouchLayouts
+import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonFastForward
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonMenu
-import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonMenuPlaceholder
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonStart
 import com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager
 import com.swordfish.touchinput.radial.ui.LemuroidButtonForeground
@@ -29,7 +29,7 @@ fun PadKitScope.WSPortraitLeft(
         primaryDial = { LemuroidControlCross(id = Id.DiscreteDirection(ComposeTouchLayouts.MOTION_SOURCE_DPAD)) },
         secondaryDials = {
             Box(modifier = Modifier.radialPosition(120f))
-            SecondaryButtonMenuPlaceholder(settings)
+            SecondaryButtonFastForward(settings)
         },
     )
 }
@@ -78,7 +78,7 @@ fun PadKitScope.WSLandscapeLeft(
         primaryDial = { LemuroidControlCross(id = Id.DiscreteDirection(ComposeTouchLayouts.MOTION_SOURCE_DPAD)) },
         secondaryDials = {
             Box(modifier = Modifier.radialPosition(120f))
-            SecondaryButtonMenuPlaceholder(settings)
+            SecondaryButtonFastForward(settings)
         },
     )
 }

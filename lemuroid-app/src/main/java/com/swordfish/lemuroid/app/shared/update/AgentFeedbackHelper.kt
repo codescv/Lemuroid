@@ -325,6 +325,54 @@ object AgentFeedbackHelper {
         email: String,
     ): Boolean = saveEmail(SharedPreferencesHelper.getSharedPreferences(context), email)
 
+    /**
+     * Dialog state after pressing "save email". Saving never dismisses the feedback dialog, so the already
+     * entered title, description and image are kept.
+     */
+    data class EmailSaveState(
+        val saved: Boolean,
+        val emailInput: String,
+        val lastSavedEmail: String,
+        val emailError: Boolean,
+    ) {
+        val shouldDismiss: Boolean
+            get() = false
+    }
+
+    /** Whether [emailInput] differs from [lastSavedEmail], i.e. whether the "save email" action is offered. */
+    fun isEmailChanged(
+        emailInput: String,
+        lastSavedEmail: String,
+    ): Boolean = normalizeEmail(emailInput) != normalizeEmail(lastSavedEmail)
+
+    /**
+     * Handles the "save email" action of the feedback dialog. A valid (or empty) email is persisted through
+     * [persist] and becomes the new saved baseline; an invalid non-empty email is rejected with an error and
+     * nothing is saved.
+     */
+    fun saveEmailFromDialog(
+        emailInput: String,
+        lastSavedEmail: String,
+        persist: (String) -> Boolean,
+    ): EmailSaveState {
+        val normalized = normalizeEmail(emailInput)
+        val valid = normalized.isEmpty() || isValidEmail(normalized)
+        if (!valid || !persist(normalized)) {
+            return EmailSaveState(
+                saved = false,
+                emailInput = emailInput,
+                lastSavedEmail = lastSavedEmail,
+                emailError = true,
+            )
+        }
+        return EmailSaveState(
+            saved = true,
+            emailInput = normalized,
+            lastSavedEmail = normalized,
+            emailError = false,
+        )
+    }
+
     fun createSendToIntent(
         email: String,
         summary: String,
