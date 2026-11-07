@@ -21,6 +21,7 @@ fun LemuroidButtonForeground(
     modifier: Modifier = Modifier,
     pressed: State<Boolean>,
     active: Boolean = false,
+    primary: Boolean = false,
     label: (@Composable BoxWithConstraintsScope.() -> Unit),
     icon: (@Composable BoxWithConstraintsScope.() -> Unit),
 ) {
@@ -28,9 +29,11 @@ fun LemuroidButtonForeground(
 
     GlassSurface(
         modifier = modifier.fillMaxSize().padding(theme.foregroundPadding),
-        fillColor = theme.foregroundFill(pressed.value, active),
+        fillColor = theme.foregroundFill(pressed.value, active, primary),
         shadowColor = theme.level3Shadow,
         shadowWidth = theme.level3ShadowWidth,
+        strokeColor = theme.foregroundStroke(primary),
+        strokeWidth = theme.strokeWidth,
         content = {
             icon()
             label()
@@ -47,13 +50,15 @@ fun LemuroidButtonForeground(
     iconScale: Float = 0.5f,
     labelScale: Float = 1.0f,
     active: Boolean = false,
+    primary: Boolean = false,
 ) {
     LemuroidButtonForeground(
         modifier = modifier,
         pressed = pressed,
         active = active,
-        label = { LemuroidButtonForegroundLabel(label, labelScale, pressed, active) },
-        icon = { LemuroidButtonForegroundIcon(icon, iconScale, pressed, active) },
+        primary = primary,
+        label = { LemuroidButtonForegroundLabel(label, labelScale, pressed, active, primary) },
+        icon = { LemuroidButtonForegroundIcon(icon, iconScale, pressed, active, primary) },
     )
 }
 
@@ -63,6 +68,7 @@ private fun BoxWithConstraintsScope.LemuroidButtonForegroundIcon(
     scale: Float,
     pressedState: State<Boolean>,
     active: Boolean,
+    primary: Boolean,
 ) {
     if (icon == null) return
 
@@ -70,7 +76,7 @@ private fun BoxWithConstraintsScope.LemuroidButtonForegroundIcon(
         modifier = Modifier.size(maxWidth * scale, maxHeight * scale),
         painter = painterResource(icon),
         contentDescription = "",
-        tint = LocalLemuroidPadTheme.current.icons(pressedState.value, active),
+        tint = LocalLemuroidPadTheme.current.icons(pressedState.value, active, primary),
     )
 }
 
@@ -80,6 +86,7 @@ private fun BoxWithConstraintsScope.LemuroidButtonForegroundLabel(
     scale: Float,
     pressedState: State<Boolean>,
     active: Boolean,
+    primary: Boolean,
 ) {
     if (label == null) return
     val fontSize = minOf(maxHeight * 0.5f * scale, maxWidth / label.length * scale)
@@ -88,7 +95,7 @@ private fun BoxWithConstraintsScope.LemuroidButtonForegroundLabel(
         textAlign = TextAlign.Center,
         fontWeight = FontWeight.Bold,
         text = label,
-        color = LocalLemuroidPadTheme.current.icons(pressedState.value, active),
+        color = LocalLemuroidPadTheme.current.icons(pressedState.value, active, primary),
         fontSize = fontSize.textUnit(),
     )
 }

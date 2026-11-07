@@ -13,5 +13,7 @@ fun LemuroidControlBackground(modifier: Modifier = Modifier) {
         fillColor = theme.level1Fill,
         shadowColor = theme.level1Shadow,
         shadowWidth = theme.level1ShadowWidth,
+        strokeColor = theme.level1Stroke,
+        strokeWidth = theme.strokeWidth,
     )
 }

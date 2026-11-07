@@ -13,6 +13,9 @@ object GameMenuContract {
     const val EXTRA_CURRENT_TILT_CONFIG = "EXTRA_CURRENT_TILT_CONFIG"
     const val EXTRA_TILT_ALL_CONFIGS = "EXTRA_TILT_ALL_CONFIGS"
 
+    /** Id of the current GBA skin (`GbaSkin.id`). Optional: a missing or unknown id means the classic glass. */
+    const val EXTRA_GBA_SKIN = "EXTRA_GBA_SKIN"
+
     const val RESULT_RESET = "RESULT_RESET"
     const val RESULT_SAVE = "RESULT_SAVE"
     const val RESULT_LOAD = "RESULT_LOAD"
@@ -22,4 +25,7 @@ object GameMenuContract {
     const val RESULT_ENABLE_AUDIO = "RESULT_ENABLE_AUDIO"
     const val RESULT_ENABLE_FAST_FORWARD = "RESULT_ENABLE_FAST_FORWARD"
     const val RESULT_CHANGE_TILT_CONFIG = "RESULT_CHANGE_TILT_CONFIG"
+
+    /** Id of the GBA skin selected in the game menu (`GbaSkin.id`). */
+    const val RESULT_CHANGE_GBA_SKIN = "RESULT_CHANGE_GBA_SKIN"
 }

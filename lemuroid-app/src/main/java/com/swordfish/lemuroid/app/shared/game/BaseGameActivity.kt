@@ -40,6 +40,7 @@ import com.swordfish.lemuroid.lib.saves.SavesManager
 import com.swordfish.lemuroid.lib.saves.StatesManager
 import com.swordfish.lemuroid.lib.saves.StatesPreviewManager
 import com.swordfish.touchinput.radial.sensors.TiltConfiguration
+import com.swordfish.touchinput.radial.skins.GbaSkin
 import dagger.Lazy
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -217,6 +218,7 @@ abstract class BaseGameActivity : ImmersiveActivity() {
                 this.putExtra(GameMenuContract.EXTRA_CURRENT_TILT_CONFIG, currentTiltConfiguration)
                 // TODO PADS... Make sure to avoid passing this if a physical pad is connected.
                 this.putExtra(GameMenuContract.EXTRA_TILT_ALL_CONFIGS, tiltConfigurations.toTypedArray())
+                this.putExtra(GameMenuContract.EXTRA_GBA_SKIN, baseGameScreenViewModel.gbaSkin.value.id)
             }
         startActivityForResult(intent, DIALOG_REQUEST)
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
@@ -410,6 +412,10 @@ abstract class BaseGameActivity : ImmersiveActivity() {
             if (data?.hasExtra(GameMenuContract.RESULT_CHANGE_TILT_CONFIG) == true) {
                 val tiltConfig = data.serializable<TiltConfiguration>(GameMenuContract.RESULT_CHANGE_TILT_CONFIG)
                 baseGameScreenViewModel.changeTiltConfiguration(tiltConfig!!)
+            }
+            if (data?.hasExtra(GameMenuContract.RESULT_CHANGE_GBA_SKIN) == true) {
+                val skinId = data.getStringExtra(GameMenuContract.RESULT_CHANGE_GBA_SKIN)
+                baseGameScreenViewModel.setGbaSkin(GbaSkin.fromId(skinId))
             }
         }
     }

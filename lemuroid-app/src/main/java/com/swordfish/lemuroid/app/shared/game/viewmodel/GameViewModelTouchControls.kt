@@ -18,6 +18,8 @@ import com.swordfish.libretrodroid.GLRetroView.Companion.MOTION_SOURCE_DPAD
 import com.swordfish.touchinput.radial.layouts.shared.ComposeTouchLayouts
 import com.swordfish.touchinput.radial.settings.TouchControllerID
 import com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager
+import com.swordfish.touchinput.radial.skins.GbaSkin
+import com.swordfish.touchinput.radial.skins.GbaSkinManager
 import gg.padkit.inputevents.InputEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +28,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -38,6 +41,7 @@ import kotlinx.coroutines.withContext
 class GameViewModelTouchControls(
     private val settingsManager: SettingsManager,
     private val touchControllerSettingsManager: TouchControllerSettingsManager,
+    private val gbaSkinManager: GbaSkinManager,
     private val retroGameView: GameViewModelRetroGameView,
     private val inputs: GameViewModelInput,
     private val tilt: GameViewModelTilt,
@@ -96,6 +100,14 @@ class GameViewModelTouchControls(
                 touchControllerSettings,
             )
         }
+    }
+
+    /** Skin selection is independent from the geometry, so [resetTouchControls] never changes it. */
+    val gbaSkin: StateFlow<GbaSkin>
+        get() = gbaSkinManager.skin
+
+    fun setGbaSkin(skin: GbaSkin) {
+        gbaSkinManager.setSkin(skin)
     }
 
     fun resetTouchControls() {

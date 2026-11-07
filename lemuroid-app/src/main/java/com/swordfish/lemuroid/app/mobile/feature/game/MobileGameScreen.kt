@@ -52,6 +52,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.swordfish.lemuroid.app.mobile.feature.gbaskin.GbaConsoleDeck
+import com.swordfish.lemuroid.app.mobile.feature.gbaskin.GbaSkinChipRow
 import com.swordfish.lemuroid.app.shared.game.BaseGameScreenViewModel
 import com.swordfish.lemuroid.app.shared.game.viewmodel.GameViewModelTouchControls.Companion.MENU_LOADING_ANIMATION_MILLIS
 import com.swordfish.lemuroid.app.shared.settings.HapticFeedbackMode
@@ -62,7 +64,9 @@ import com.swordfish.touchinput.radial.LemuroidPadTheme
 import com.swordfish.touchinput.radial.LocalLemuroidFastForward
 import com.swordfish.touchinput.radial.LocalLemuroidPadTheme
 import com.swordfish.touchinput.radial.sensors.TiltConfiguration
+import com.swordfish.touchinput.radial.settings.TouchControllerID
 import com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager
+import com.swordfish.touchinput.radial.skins.GbaSkin
 import com.swordfish.touchinput.radial.ui.GlassSurface
 import com.swordfish.touchinput.radial.ui.LemuroidButtonPressFeedback
 import gg.padkit.PadKit
@@ -115,6 +119,7 @@ fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
             }
 
         val fastForwardEnabledState = viewModel.fastForwardEnabled.collectAsState()
+        val gbaSkinState = viewModel.gbaSkin.collectAsState()
 
         DisposableEffect(viewModel) {
             onDispose { viewModel.onVirtualPadDisposed() }
@@ -180,6 +185,19 @@ fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
                     val padsMeasureOnly = !touchControlsVisible && !isLandscape
                     val padsComposed = touchControlsVisible || !isLandscape
 
+                    // Skins only change colors, never the pads geometry, so the viewport stays where it is.
+                    val gbaSkin =
+                        if (currentControllerConfig.touchControllerID == TouchControllerID.GBA) {
+                            gbaSkinState.value
+                        } else {
+                            GbaSkin.DEFAULT
+                        }
+                    val overlay = isLandscape && currentControllerConfig.allowTouchOverlay
+                    val padTheme =
+                        remember(gbaSkin, overlay) {
+                            if (gbaSkin.isDefault) LemuroidPadTheme() else gbaSkin.padTheme(overlay)
+                        }
+
                     if (padsComposed) {
                         key(padsMeasureOnly) {
                             // Supported or not, the fast forward slot keeps the same footprint, so the pads (and
@@ -190,11 +208,16 @@ fun MobileGameScreen(viewModel: BaseGameScreenViewModel) {
                                     active = fastForwardEnabledState.value,
                                 )
                             CompositionLocalProvider(
-                                LocalLemuroidPadTheme provides LemuroidPadTheme(),
+                                LocalLemuroidPadTheme provides padTheme,
                                 LocalLemuroidFastForward provides fastForwardState,
                             ) {
                                 if (touchControlsVisible) {
-                                    if (!isLandscape) {
+                                    if (!isLandscape && !gbaSkin.isDefault) {
+                                        GbaConsoleDeck(
+                                            skin = gbaSkin,
+                                            modifier = Modifier.layoutId(GameScreenLayout.CONSTRAINTS_BOTTOM_CONTAINER),
+                                        )
+                                    } else if (!isLandscape) {
                                         PadContainer(
                                             modifier = Modifier.layoutId(GameScreenLayout.CONSTRAINTS_BOTTOM_CONTAINER),
                                         )
@@ -311,6 +334,13 @@ private fun MenuEditTouchControls(
                         .padding(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                if (controllerConfig.touchControllerID == TouchControllerID.GBA) {
+                    val gbaSkin = viewModel.gbaSkin.collectAsState()
+                    GbaSkinChipRow(
+                        selected = gbaSkin.value,
+                        onSkinSelected = { viewModel.setGbaSkin(it) },
+                    )
+                }
                 MenuEditTouchControlRow(Icons.Default.OpenInFull, "Scale", 0f) {
                     Slider(
                         value = touchControllerSettings.scale,

@@ -36,6 +36,8 @@ import com.swordfish.lemuroid.lib.saves.StatesPreviewManager
 import com.swordfish.libretrodroid.GLRetroView
 import com.swordfish.touchinput.radial.sensors.TiltConfiguration
 import com.swordfish.touchinput.radial.settings.TouchControllerSettingsManager
+import com.swordfish.touchinput.radial.skins.GbaSkin
+import com.swordfish.touchinput.radial.skins.GbaSkinManager
 import gg.padkit.inputevents.InputEvent
 import gg.padkit.inputstate.InputState
 import kotlinx.coroutines.delay
@@ -123,6 +125,7 @@ class BaseGameScreenViewModel(
         GameViewModelTouchControls(
             settingsManager,
             TouchControllerSettingsManager(sharedPreferences),
+            GbaSkinManager(sharedPreferences),
             retroGameView,
             inputs,
             tilt,
@@ -219,6 +222,14 @@ class BaseGameScreenViewModel(
 
     fun resetTouchControls() {
         touchControls.resetTouchControls()
+    }
+
+    /** Selected GBA skin; only applied to the GBA touch controller. */
+    val gbaSkin: StateFlow<GbaSkin>
+        get() = touchControls.gbaSkin
+
+    fun setGbaSkin(skin: GbaSkin) {
+        touchControls.setGbaSkin(skin)
     }
 
     fun onScreenOrientationChanged(orientation: TouchControllerSettingsManager.Orientation) {

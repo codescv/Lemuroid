@@ -55,8 +55,12 @@ fun PadKitScope.GBARight(
                     ),
                 idsForegrounds =
                     persistentMapOf<Id.Key, @Composable (State<Boolean>) -> Unit>(
-                        Id.Key(KeyEvent.KEYCODE_BUTTON_A) to { LemuroidButtonForeground(pressed = it, label = "A") },
-                        Id.Key(KeyEvent.KEYCODE_BUTTON_B) to { LemuroidButtonForeground(pressed = it, label = "B") },
+                        Id.Key(KeyEvent.KEYCODE_BUTTON_A) to {
+                            LemuroidButtonForeground(pressed = it, label = "A", primary = true)
+                        },
+                        Id.Key(KeyEvent.KEYCODE_BUTTON_B) to {
+                            LemuroidButtonForeground(pressed = it, label = "B", primary = true)
+                        },
                     ),
             )
         },

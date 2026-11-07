@@ -44,6 +44,11 @@ enum class GameMenuRoute(
         titleId = R.string.game_menu_settings,
         parent = HOME,
     ),
+    GBA_SKIN(
+        route = "gba_skin",
+        titleId = R.string.game_menu_gba_skin,
+        parent = HOME,
+    ),
     ;
 
     fun canGoBack(): Boolean {

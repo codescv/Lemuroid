@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -17,10 +18,13 @@ import com.alorma.compose.settings.storage.memory.rememberMemoryBooleanSettingSt
 import com.alorma.compose.settings.storage.memory.rememberMemoryIntSettingState
 import com.swordfish.lemuroid.R
 import com.swordfish.lemuroid.app.mobile.feature.gamemenu.tilt.TiltConfigurationMenuEntry
+import com.swordfish.lemuroid.app.mobile.feature.gbaskin.GbaSkinColorDot
+import com.swordfish.lemuroid.app.mobile.feature.gbaskin.titleRes
 import com.swordfish.lemuroid.app.shared.GameMenuContract
 import com.swordfish.lemuroid.app.utils.android.settings.LemuroidSettingsList
 import com.swordfish.lemuroid.app.utils.android.settings.LemuroidSettingsMenuLink
 import com.swordfish.lemuroid.app.utils.android.settings.LemuroidSettingsSwitch
+import com.swordfish.lemuroid.lib.library.SystemID
 import kotlin.reflect.KFunction1
 
 @Composable
@@ -140,6 +144,21 @@ fun GameMenuHomeScreen(
                 onResult { putExtra(GameMenuContract.RESULT_EDIT_TOUCH_CONTROLS, true) }
             },
         )
+
+        if (gameMenuRequest.game.systemId == SystemID.GBA.dbname) {
+            LemuroidSettingsMenuLink(
+                title = { Text(text = stringResource(id = R.string.game_menu_gba_skin)) },
+                subtitle = { Text(text = stringResource(id = gameMenuRequest.gbaSkin.titleRes)) },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Palette,
+                        contentDescription = stringResource(id = R.string.game_menu_gba_skin),
+                    )
+                },
+                action = { GbaSkinColorDot(gameMenuRequest.gbaSkin) },
+                onClick = { navController.navigateToRoute(GameMenuRoute.GBA_SKIN) },
+            )
+        }
 
         if (gameMenuRequest.advancedCoreOptions.isNotEmpty() || gameMenuRequest.coreOptions.isNotEmpty()) {
             LemuroidSettingsMenuLink(

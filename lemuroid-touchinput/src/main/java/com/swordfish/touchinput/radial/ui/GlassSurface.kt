@@ -13,6 +13,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
@@ -66,6 +67,8 @@ fun GlassSurface(
     fillColor: Color = Color.White.copy(alpha = 0.15f),
     shadowColor: Color = Color.Black.copy(alpha = 0.3f),
     shadowWidth: Dp = 1.dp,
+    strokeColor: Color = Color.Transparent,
+    strokeWidth: Dp = 0.dp,
     content: @Composable BoxWithConstraintsScope.() -> Unit = { },
 ) {
     BoxWithConstraints(
@@ -86,6 +89,7 @@ fun GlassSurface(
                 val expandedSize = Size(expandedWidth, expandedHeight)
 
                 val cornerRadiusPx = minOf(cornerRadius.toPx(), expandedSize.minDimension / 2f)
+                val strokeWidthPx = minOf(strokeWidth.toPx(), expandedSize.minDimension / 2f)
 
                 val shouldDrawShadow = shadowColor.alpha > 0f && blurRadiusPx > 0f
                 val shadowPaddingPx = if (shouldDrawShadow) blurRadiusPx else 0f
@@ -117,6 +121,19 @@ fun GlassSurface(
                         size = expandedSize,
                         cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx),
                     )
+
+                    // Optional rim, drawn inside the bounds so it never affects layout or hit testing.
+                    if (strokeWidthPx > 0f && strokeColor.alpha > 0f) {
+                        val inset = strokeWidthPx / 2f
+                        val strokeCornerRadius = (cornerRadiusPx - inset).coerceAtLeast(0f)
+                        drawRoundRect(
+                            color = strokeColor,
+                            topLeft = Offset(inset, inset),
+                            size = Size(expandedWidth - strokeWidthPx, expandedHeight - strokeWidthPx),
+                            cornerRadius = CornerRadius(strokeCornerRadius, strokeCornerRadius),
+                            style = Stroke(width = strokeWidthPx),
+                        )
+                    }
 
                     drawContent()
                 }

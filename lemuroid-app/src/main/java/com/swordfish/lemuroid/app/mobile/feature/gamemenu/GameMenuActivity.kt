@@ -57,6 +57,7 @@ import com.swordfish.lemuroid.lib.library.db.entity.Game
 import com.swordfish.lemuroid.lib.saves.StatesManager
 import com.swordfish.lemuroid.lib.saves.StatesPreviewManager
 import com.swordfish.touchinput.radial.sensors.TiltConfiguration
+import com.swordfish.touchinput.radial.skins.GbaSkin
 import java.security.InvalidParameterException
 import javax.inject.Inject
 
@@ -82,6 +83,7 @@ class GameMenuActivity : RetrogradeComponentActivity() {
         val currentDisk: Int,
         val currentTiltConfiguration: TiltConfiguration,
         val allTiltConfigurations: List<TiltConfiguration>,
+        val gbaSkin: GbaSkin = GbaSkin.DEFAULT,
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -127,6 +129,7 @@ class GameMenuActivity : RetrogradeComponentActivity() {
                     intent.serializable<Array<TiltConfiguration>>(GameMenuContract.EXTRA_TILT_ALL_CONFIGS)
                         ?.toList()
                         ?: emptyList(),
+                gbaSkin = GbaSkin.fromId(extras?.getString(GameMenuContract.EXTRA_GBA_SKIN)),
             )
 
         setContent {
@@ -224,6 +227,14 @@ class GameMenuActivity : RetrogradeComponentActivity() {
                                 factory = GameMenuCoreOptionsViewModel.Factory(inputDeviceManager),
                             ),
                             gameMenuRequest,
+                        )
+                    }
+                    composable(GameMenuRoute.GBA_SKIN) {
+                        GameMenuGbaSkinScreen(
+                            selectedSkin = gameMenuRequest.gbaSkin,
+                            onSkinSelected = { skin ->
+                                onResult { putExtra(GameMenuContract.RESULT_CHANGE_GBA_SKIN, skin.id) }
+                            },
                         )
                     }
                 }
