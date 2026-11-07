@@ -306,18 +306,25 @@ private fun DrawScope.drawTrimAccent(
     }
 }
 
+/**
+ * Badge and POWER LED on the lens trim. The top center and the outer corners of the deck are covered by the L/R,
+ * Select and Start dials, so the badge sits above the D-pad (25% of the width) and the LED group above the A/B
+ * buttons (75%), where the GBA pads leave their top slot empty, like the right side LED of the real console.
+ */
 private fun DrawScope.drawLensBadges(
     palette: GbaSkinPalette,
     barHeight: Float,
     badgeLayout: TextLayoutResult,
     powerLayout: TextLayoutResult,
 ) {
-    val inset = min(14.dp.toPx(), size.width * 0.04f)
     val centerY = barHeight / 2f
-
-    // POWER LED with a soft radial halo.
-    val ledCenter = Offset(inset + barHeight * 0.6f + 8.dp.toPx(), centerY)
     val haloRadius = min(8.dp.toPx(), barHeight * 0.45f)
+    val showPower = powerLayout.size.height <= barHeight
+    val powerWidth = if (showPower) powerLayout.size.width.toFloat() else 0f
+
+    // POWER LED with a soft radial halo, centered as a group with its label.
+    val groupWidth = haloRadius * 2f + powerWidth
+    val ledCenter = Offset(size.width * LED_GROUP_POSITION - groupWidth / 2f + haloRadius, centerY)
     drawCircle(
         brush =
             Brush.radialGradient(
@@ -330,16 +337,20 @@ private fun DrawScope.drawLensBadges(
     )
     drawCircle(palette.led, radius = min(2.6.dp.toPx(), barHeight * 0.15f), center = ledCenter)
 
-    if (powerLayout.size.height <= barHeight) {
+    if (showPower) {
         drawText(
             textLayoutResult = powerLayout,
             topLeft = Offset(ledCenter.x + haloRadius, centerY - powerLayout.size.height / 2f),
         )
     }
-    if (badgeLayout.size.height <= barHeight && badgeLayout.size.width < size.width * 0.5f) {
+    if (badgeLayout.size.height <= barHeight && badgeLayout.size.width < size.width * 0.4f) {
         drawText(
             textLayoutResult = badgeLayout,
-            topLeft = Offset((size.width - badgeLayout.size.width) / 2f, centerY - badgeLayout.size.height / 2f),
+            topLeft =
+                Offset(
+                    size.width * BADGE_POSITION - badgeLayout.size.width / 2f,
+                    centerY - badgeLayout.size.height / 2f,
+                ),
         )
     }
 }
@@ -488,6 +499,8 @@ private fun DrawScope.drawPreviewLed(
 }
 
 private const val SPEAKER_SLOTS = 6
+private const val BADGE_POSITION = 0.25f
+private const val LED_GROUP_POSITION = 0.75f
 private const val DOT_MATRIX_SIZE = 4
 
 private val PREVIEW_BACKDROP_TOP = Color(0xFF3A3F4B)
